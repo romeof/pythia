@@ -1,0 +1,71 @@
+read:
+  raw_data: "../data/2026_09_25_0/0/raw/0.h5"
+  output_root: "./data"
+  ini_date: "2019-01-01"
+  end_date: "2021-09-03" 
+  reference_series: ["0"]
+  skip_series: []
+
+trigger:
+  gate:                 # a begin at bar i needs bar i-1 to pass every item that applies to the series; a NaN fails
+    items:
+      - {column: var12, op: ">=", threshold: 0.83, exempt_series: ["0"]}   # every series but the reference series 0
+      - {column: var15, op: ">=", threshold: 0.73}                         # every series
+    prefilter: true     # skip a series one applicable item passes on no bar of the read window (never a reference series)
+  min_length: 5
+  consecutive_rows_with_bad_preprocessed_data: 3
+  trigger_value: "following_row" #"detection_row"
+  validity:              # a row failing any rule is invalid; so is a row with a NaN in var0-var5
+    nonnegative: [var0, var1, var2, var3, var4, var5]
+    nonzero: [var5]
+    not_all_equal: [var0, var1, var2, var3]
+  strategy:
+    strategy_name: "extrema"
+    window_size: 7
+    min_distance: 5
+    prominence_threshold: 0.05
+    width: 1
+  replay:
+    mode: "dual" #"ideal" #"realistic"
+    lookback_window: 50 # Burn-in period: wait this many bars (rows) before starting analysis
+    window_type: "rolling" # "expanding" = use full history, "rolling" = use fixed window of lookback_window length
+    min_duration_periods: 2 # Minimum duration: no end allowed before this
+
+    # === End Configuration ===
+    # Each end mode is a single self-documenting parameter:
+    #   - Set a value to enable (threshold or true)
+    #   - Set null/false to disable
+    # All available modes are always listed for visibility.
+    # No mode list: active modes are derived from non-null values.
+    # Checking sequence is fixed in code: against_threshold > along_threshold > opposite_trigger > different_end > max_duration
+    end:
+      max_duration_periods: 500 # Time-based safety limit. null = disabled
+      against_threshold_pct: null # Move against the trigger direction (e.g. 0.05 = 5%). null = disabled
+      along_threshold_pct: null # Move along the trigger direction (e.g. 0.10 = 10%). null = disabled
+      opposite_trigger_as_begin_strategy: true # End on opposite trigger. false = disabled
+      different_end_strategy: false # Use strategy-specific end logic. false = disabled
+
+signal:
+  corr_threshold: 0.6
+  period_back: 5
+  signal_criterion: "earliest_begin_highest_slope"
+
+performance:
+  perseries_trigger: {}
+  perseries_signal: {}
+  gradient:
+    weight: 0.2
+    variation_method: "multiplicative_total_before_active_signals" # valid: multiplicative_fixed, multiplicative_total_with_active_signals, multiplicative_total_before_active_signals
+    concurrent_weight_limit: 1.0
+    yearly_attenuation_fraction: 0.25
+    attenuation_month: 6
+    boundary_deduction_pct: 0.0  # Deduction as % at each event boundary (e.g., 0.1 = 0.1% at each boundary, 0.2% for both). 0.0 = disabled
+    mpv: 0.0  # Minimal positive variation rate (decimal). 0.0 = disabled
+  metrics:
+    display_order_signals:
+      - variation_avg
+      - variation_std
+      - variation_std_dw
+      - duration_avg
+      - trials_to_true_avgt
+

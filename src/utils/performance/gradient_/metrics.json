@@ -1,0 +1,18 @@
+{
+  "acr":           {"label": "acr (%)",             "format": "float", "group": "standalone"},
+  "acr_after_attenuation": {"label": "acr (after attenuation) (%)", "format": "float", "group": "standalone", "postattenuation_source": "acr"},
+  "std":     {"label": "std (%)",    "format": "float", "group": "standalone"},
+  "std_dw":  {"label": "std_dw (%)", "format": "float", "group": "standalone"},
+  "snr":     {"label": "snr",        "format": "float", "group": "standalone"},
+  "snr_dw":  {"label": "snr_dw",     "format": "float", "group": "standalone"},
+  "max_fall": {"label": "max_fall (%)", "format": "float", "group": "standalone"},
+  "fall_dur": {"label": "fall_dur",   "format": "int",   "group": "standalone"},
+  "below_max_dur": {"label": "below_max_dur", "format": "int",   "group": "standalone"},
+  "rho":     {"label": "rho",        "format": "float", "group": "relative"},
+  "sens":    {"label": "sens",       "format": "float", "group": "relative"},
+  "sens_dw": {"label": "sens_dw",    "format": "float", "group": "relative"},
+  "exv":     {"label": "exv (%)",    "format": "float", "group": "relative"},
+  "exv_dw":  {"label": "exv_dw (%)", "format": "float", "group": "relative"},
+  "ref_snr": {"label": "ref_snr",    "format": "float", "group": "relative"},
+  "ref_snr_dw": {"label": "ref_snr_dw", "format": "float", "group": "relative"}
+}

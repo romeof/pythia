@@ -1,0 +1,37 @@
+flowchart LR
+    START([Raw HDF5 Data])
+
+    subgraph T ["1. TRIGGER"]
+        direction TB
+        T1["1.1 Read<br/>Load time series from HDF5"] --> T2["1.2 Gate Pre-filter<br/>Check the gate columns;<br/>skip non-reference series<br/>one applicable item<br/>passes on no bar"] --> T3["1.3 Preprocess<br/>Remove invalid rows"] --> T4["1.4 Trigger Detection<br/>Detect trigger-begins<br/>and trigger-ends"] --> T5["1.5 Trigger Extraction<br/>Pair begin/end dates<br/>Classify plus/minus & true/false"] --> T6["1.6 Reference Handling<br/>Save pre-preprocessing<br/>reference series"]
+    end
+
+    subgraph S ["2. SIGNAL"]
+        direction TB
+        S1["2.1 Accumulation<br/>Collect series values<br/>and triggers"] --> S2["2.2 Selection<br/>Assign group IDs by overlap<br/>and correlation"] --> S3["2.3 Persistence<br/>Write groups, signal series<br/>and references to HDF5"]
+    end
+
+    subgraph P ["3. PERFORMANCE"]
+        direction TB
+        P1["3.1 Per-Series Analysis<br/>Compute metrics, enrich<br/>trigger and signal series"] --> P2["3.2 Gradient Analysis<br/>Aggregate total variation<br/>curve from signals"] --> P3["3.3 Persistence<br/>Write enriched signals<br/>and gradient to HDF5"]
+    end
+
+    ENDP([Performance HDF5])
+
+    START --> T
+    T --> S
+    S --> P
+    P --> ENDP
+
+    %% ===== STYLES =====
+    classDef subTask fill:#E8F0FE,stroke:#4A90D9,color:#1a1a1a
+    classDef endpoint fill:#D4EDDA,stroke:#28A745,color:#1a1a1a,font-weight:bold
+
+    class T1,T2,T3,T4,T5,T6 subTask
+    class S1,S2,S3 subTask
+    class P1,P2,P3 subTask
+    class START,ENDP endpoint
+
+    style T fill:#EBF5FB,stroke:#4A90D9,stroke-width:2px
+    style S fill:#EBF5FB,stroke:#4A90D9,stroke-width:2px
+    style P fill:#EBF5FB,stroke:#4A90D9,stroke-width:2px

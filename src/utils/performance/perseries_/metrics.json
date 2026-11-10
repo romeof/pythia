@@ -1,0 +1,22 @@
+{
+  "variation": {
+    "column": "variation",
+    "operations": ["mult", "avg", "std", "std_dw"],
+    "labels": {
+      "mult":   "multiplicative (%)",
+      "avg":    "variation avg (%)",
+      "std":    "variation std (%)",
+      "std_dw": "variation std_dw (%)"
+    }
+  },
+  "duration": {
+    "column": "duration",
+    "operations": ["avg"],
+    "labels": {"avg": "duration avg"}
+  },
+  "trials_to_true": {
+    "column": "trials_to_true",
+    "operations": ["avgt"],
+    "labels": {"avgt": "trials-to-true avg"}
+  }
+}

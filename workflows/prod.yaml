@@ -1,0 +1,45 @@
+# Production profile (pipeline.py --profile prod, the default): the switches of dev.yaml with every
+# printout and plot off; every other value equals dev.yaml's.
+general:
+  enable_info: true
+
+trigger:
+  read:
+    printout_io: false # DataFrame shapes/contents at read stage
+  preprocess:
+    printout_io: false # DataFrame shapes/contents after cleaning
+  strategy:
+    printout_io: false # DataFrame shapes/contents after trigger detection
+    printout_debug: false # Event begins, ends, trigger summary, trigger counts
+    full_output: false # If true, print all rows instead of first/last 10
+    plot_debug: false # Debug plots per iteration in realistic mode
+
+signal:
+  input:
+    printout_io: false # Accumulated trigger DataFrames
+    full_output: false # If true, print all rows instead of first/last 10
+  selection:
+    printout_io: false # Groups DataFrame after signal assignment
+    full_output: false # If true, print all rows instead of first/last 10
+
+performance:
+  perseries_trigger:
+    printout_io: false # Triggers DataFrame per series after extraction
+    full_output: false # If true, print all rows instead of first/last 10
+    plot_debug: false # Per-series trigger plots
+  perseries_signal:
+    printout_io: false # Signal DataFrame per series after extraction
+    full_output: false # If true, print all rows instead of first/last 10
+    plot_debug: false # Per-series signal plots
+  gradient:
+    printout_io: false # Total variation series after computation
+    printout_debug: false # Weight constraint logs, reference variation
+    full_output: false # If true, print all rows instead of first/last 10
+    plot_debug: false # Gradient plot (gradient.png) and its per-signal plots
+    max_plots: 100 # Cap on signal plots
+    plots_whitelist: [] # Whitelist for signal plots
+    max_references: 3 # Maximum number of reference series accepted by the pipeline
+
+runtime:
+  queue_maxsize: 1024
+  queue_get_timeout: 10

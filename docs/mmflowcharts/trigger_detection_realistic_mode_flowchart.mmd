@@ -1,0 +1,71 @@
+---
+config:
+  layout: dagre
+---
+flowchart TB
+subgraph Trigger_Detection["Phase 1: New trigger candidate selection detection"]
+    direction TB
+        WindowSelect["Select Window (_window_bounds):<br>expanding or rolling"]
+        DetectBegin["Candidates and turning-point count<br>from the window's var3 values<br>(_begin_candidate_rows);<br>window frame only for the debug plots<br>and the different-end mode"]
+        FindCandidate["Find new trigger candidate passing:<br>- Temporal constraint<br>- Gate on bar i-1<br>"]
+        MonitorActive{"Active trigger<br>exists?"}
+        IfActive["Strict same-type rejection or pending opposite"]
+  end
+subgraph End_Monitoring["Phase 2: Active trigger - check end"]
+    direction TB
+        CheckMinDuration{"Duration ≥ min_duration?"}
+        SkipEnds["Skip ALL end checks:<br>Within the minimum duration"]
+        CheckEnd1{"END 1: against_threshold<br>(Move against the trigger direction ≥ threshold)"}
+        EndAgainstThreshold["End: against_threshold"]
+        CheckEnd2{"END 2: along_threshold<br>(Move along the trigger direction ≥ threshold)"}
+        EndAlongThreshold["End: along_threshold"]
+        CheckEnd3{"END 3: opposite_trigger_as_begin_strategy<br>(Pending opposite exists?)"}
+        EndOppositeAndMark["End: opposite_trigger<br>+ Mark pending as new active"]
+        CheckEnd4{"END 4: different_end_strategy<br>(End trigger detected?)"}
+        EndStrategy["End: different_end_strategy"]
+        CheckEnd5{"END 5: max_duration<br>(Duration ≥ max_duration_periods)"}
+        EndDuration["End: max_duration"]
+        ClearPending{"Pending opposite<br>exists?"}
+        RejectPending["Reject pending:<br>No end condition"]
+  end
+    Start(["Start Iteration i"]) --> WindowSelect
+    WindowSelect --> DetectBegin
+    DetectBegin --> FindCandidate
+    FindCandidate --> MonitorActive
+    MonitorActive -- No --> FoundCandidate{"New trigger candidate<br> found?"}
+    FoundCandidate -- Yes --> MarkNew["MarkNew"]
+    MarkNew --> NextIter(["Next Iteration"])
+    FoundCandidate -- No --> NextIter
+    MonitorActive -- Yes --> IfActive
+    IfActive --> CheckMinDuration
+    CheckMinDuration -- No --> SkipEnds
+    CheckMinDuration -- Yes --> CheckEnd1
+    CheckEnd1 -- Yes --> EndAgainstThreshold
+    CheckEnd1 -- No --> CheckEnd2
+    CheckEnd2 -- Yes --> EndAlongThreshold
+    CheckEnd2 -- No --> CheckEnd3
+    CheckEnd3 -- Yes --> EndOppositeAndMark
+    CheckEnd3 -- No --> CheckEnd4
+    CheckEnd4 -- Yes --> EndStrategy
+    CheckEnd4 -- No --> CheckEnd5
+    CheckEnd5 -- Yes --> EndDuration
+    CheckEnd5 -- No --> ClearPending
+    ClearPending -- Yes --> RejectPending
+    SkipEnds --> NextIter
+    ClearPending -- No --> NextIter
+    RejectPending --> NextIter
+    EndAgainstThreshold --> ClearActive["Clear active trigger"]
+    EndAlongThreshold --> ClearActive
+    EndDuration --> ClearActive
+    EndStrategy --> ClearActive
+    EndOppositeAndMark --> NextIter
+    ClearActive --> NextIter
+
+    style SkipEnds fill:#fff3e1,stroke-dasharray:5 5
+    style EndAgainstThreshold fill:#ffe1e1,stroke:#d00
+    style EndAlongThreshold fill:#e1f5ff,stroke:#00d
+    style EndDuration fill:#fff9e1,stroke:#da0
+    style EndOppositeAndMark fill:#e1ffe1,stroke:#0d0
+    style EndStrategy fill:#f5e1ff,stroke:#80d
+    style RejectPending fill:#fff3e1,color:#999
+    style MarkNew fill:#e1ffe1,stroke:#0d0

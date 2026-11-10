@@ -1,0 +1,23 @@
+#File extensions
+*.h5
+*.hd5
+*.png
+*.csv
+*.pyc
+*.swp
+*.swx
+
+#Specific folders
+/data/
+__pycache__/
+/.venv/
+
+# Hidden files and folders: a secrets file and Jupyter's checkpoints
+.env
+.ipynb_checkpoints/
+
+#Specific files
+/src/varsreadout.txt
+/verification_*.txt
+/temp*
+/plans/
