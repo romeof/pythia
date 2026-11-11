@@ -169,3 +169,42 @@ Not done, or changed by design:
 - The weeklyrows run left numba caches under src/utils/performance; they were removed, and git status --ignored is
   empty again.
 No decision was escalated.
+
+
+RE-TEST AFTER THE CLOSING PASS (verifier, round r01_T-test, launch 20261111-163029, fix cycle 1, route closing)
+--------------------------------------------------------------------------------------------------------------
+VERDICT: PASS. Tip 233e9d1 (the closing pass 0260f8f plus its record commit). Scope as briefed: the scripts that
+exercise the files the fix changed (tests/gatevector.py, tests/weeklyrows.py) and every test this record lists as
+failing (none). The full suite was not re-run: the brief defers it to a blocking fix or the review loop's close.
+python = the master venv interpreter, PYTHONUTF8=1, -B; cwd = worktree root.
+
+Test commands (command, timeout, duration, result, failing tests)
+R1. python -B tests/gatevector.py   timeout 550 s   1.4 s    rc 0   "SUMMARY 14 PASS, 0 FAIL"   failing: none.
+    The reworded verdict ran and passed, console line verbatim:
+    "PASS blocking_item: items passing on different rows only (never both on the same row) return None:
+     expected {'returned': None, 'rows': {'var12': [5], 'var14': [3]}}; actual {'returned': None, 'rows':
+     {'var12': [5], 'var14': [3]}}"
+R2. python -B tests/weeklyrows.py   timeout 550 s   15.5 s   rc 0   "SUMMARY 57 PASS, 0 FAIL"   failing: none.
+R3. Project check, exactly as planloop runs it: cmd.exe /d /s /c "<python 3.11>" pythia/rules/lint_terminology.py
+    "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src", cwd = workspace root, limit 600 s
+    0.5 s; rc 0; "terminology OK: 64 file(s) scanned, 49 banned terms, 16 exempt; no hits".
+(Each script ran twice: the first pass timed with a missing tool, so its durations went unrecorded; both passes gave
+the same rc 0 and verdict counts.) No command timed out; no test failed.
+
+Spot checks of the fix at the tip
+- tests/gatevector.py:10 "... though never all on the same row; ..."; :109 the label above; tests/weeklyrows.py:56
+  "... realistic, each begin one weekly row later: ...". Line counts 155 and 647, as recorded by the closing pass.
+- A1's three greps (record excluded) print 0, 0 and 0 lines; git ls-files holds 0 paths with the old test file's
+  name. A2's weekday-name and abbreviation greps print 0 lines in the two edited files.
+
+Not done here
+- tests/runall.py (the full suite), A5's AST comparison, the strict lint, the A8 sweep and residual.py were not
+  re-run in this round; the closing pass recorded them for 0260f8f, and the fix touches only a docstring line in each
+  file and one verdict label.
+- Cleanup: the two runs left numba caches (src/utils/performance/gradient_/__pycache__, perseries_/__pycache__);
+  they were removed, and git status --ignored is empty again.
+No decision was escalated.
+
+
+== PROJECT CHECKS (run by planloop after the verdict, from C:\Users\ziosa\Desktop\work\cld; timeout 600 s each) ==
+PASS  "C:\Users\ziosa\AppData\Local\Programs\Python\Python311\python.exe" pythia/rules/lint_terminology.py "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src"  (0.5 s)
