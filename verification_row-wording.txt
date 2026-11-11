@@ -175,7 +175,7 @@ RE-TEST AFTER THE CLOSING PASS (verifier, round r01_T-test, launch 20261111-1630
 --------------------------------------------------------------------------------------------------------------
 VERDICT: PASS. Tip 233e9d1 (the closing pass 0260f8f plus its record commit). Scope as briefed: the scripts that
 exercise the files the fix changed (tests/gatevector.py, tests/weeklyrows.py) and every test this record lists as
-failing (none). The full suite was not re-run: the brief defers it to a blocking fix or the review loop's close.
+failing (none). The full suite was not re-run: the brief defers it to a blocking fix or the review loop's end.
 python = the master venv interpreter, PYTHONUTF8=1, -B; cwd = worktree root.
 
 Test commands (command, timeout, duration, result, failing tests)
@@ -203,6 +203,73 @@ Not done here
   file and one verdict label.
 - Cleanup: the two runs left numba caches (src/utils/performance/gradient_/__pycache__, perseries_/__pycache__);
   they were removed, and git status --ignored is empty again.
+No decision was escalated.
+
+
+== PROJECT CHECKS (run by planloop after the verdict, from C:\Users\ziosa\Desktop\work\cld; timeout 600 s each) ==
+PASS  "C:\Users\ziosa\AppData\Local\Programs\Python\Python311\python.exe" pythia/rules/lint_terminology.py "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src"  (0.5 s)
+
+=========================================================
+FULL RE-TEST (verifier, round r01_T-test, launch 20261111-164440, scope FULL)
+=========================================================
+VERDICT: PASS. Branch row-wording, tip 862174c (confirmed the tip; code identical to the closing pass 0260f8f:
+git diff --stat 0260f8f..HEAD lists only this record). python = the master venv interpreter
+(..\pythia\.venv\Scripts\python.exe), PYTHONUTF8=1, -B; cwd = worktree root; input data read in place from the
+shared pythia\data through the workflows' existing paths (2 data files).
+
+Test commands (command, timeout, measured duration, result, failing tests)
+F1. python -B tests/runall.py            timeout 1750 s (timeout(1), inside an 1800 s tool limit)   1028 s
+    return code 0; last line "SUMMARY 69 PASS, 0 FAIL"; 69 PASS lines (the cwd verdict plus 68 scripts), 0 FAIL
+    lines; failing tests: none.
+F2. python -B tests/weeklyrows.py        timeout 550 s   14.0 s   rc 0   "SUMMARY 57 PASS, 0 FAIL"   failing: none.
+F3. python -B tests/gatemodes.py         timeout 550 s    3.7 s   rc 0   "SUMMARY 12 PASS, 0 FAIL"   failing: none.
+F4. python -B tests/badblocks.py         timeout 550 s    1.4 s   rc 0   "SUMMARY 3 PASS, 0 FAIL"    failing: none.
+F5. Project check, exactly as planloop runs it: cmd.exe /d /s /c "<python 3.11>" pythia/rules/lint_terminology.py
+    "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src", cwd = workspace root, limit 600 s (620 s tool
+    timeout)   0.54 s; rc 0; "terminology OK: 64 file(s) scanned, 49 banned terms, 16 exempt; no hits".
+F6. lint_terminology.py --self-test      timeout 300 s   < 5 s   rc 0.
+F7. lint_terminology.py --strict src tests audit workflows   timeout 300 s   < 5 s   rc 1 (expected: standing hits);
+    65 hits across 168 files = the three standing terms at 36/20/9, equal to master's 65; 0 hits of the retired word.
+No command timed out; no test failed.
+
+Acceptance criteria re-checked at the tip (all PASS)
+A1  the brief's three git greps (record excluded): 0, 0, 0 lines; tracked paths with the old test file's name: 0.
+A2  weekday-name grep 0 lines; abbreviation grep 0 lines; "five rows a week": 0 lines outside this record (its one
+    hit is the A2 line above, quoting the phrase). The weekdays? grep lists only the stay sites: docs/performance.md:455,
+    src/utils/performance/gradient.py:65, tests/effectivestart.py:6, tests/lookbackrows.py (7 lines),
+    tests/observeddates.py:9,13 (plus 3 lines of this record).
+A3  tests/weeklyrows.py: 0 lines for the D1-D5 labels or "upstream".
+A4  audit/synthetic.py: 0 lines of the old parameter name.
+A5  new helper temp_row-wording/a5check.py over git diff --name-status -M fa2cc18..HEAD (36 paths plus this record):
+    8 src files with equal line counts and equal ASTs without docstrings; 2 workflows files with equal yaml.safe_load
+    objects; 25 tests/audit files equal node for node after an identifier map inferred from the diff (10 renames; the
+    map is a function and injective across all files); 26 differing str constants, 26 passing (master's text holds a
+    retired word and the tip keeps every number and YYYY-MM-DD); 1 other path (docs); 30 audit/*.py and every changed
+    test compile in memory; problems: 0. scopecheck.py: 0 clashes between a renamed name and its target in 739
+    symtable scopes of master's 33 Python files.
+A6  F1: rc 0, "SUMMARY 69 PASS, 0 FAIL".
+A7  F5-F7: self-test rc 0; default run on src 0 hits; strict counts as above.
+A8  new helper temp_row-wording/a8sweep.py: exp20sweeps' 10 scanner names extracted with ast and run with a stub CTX
+    on pythia\rules: "control verdicts: 25/25 pass; failing: 0"; "scope files: 179; reported hits: 0 in 0 files".
+    residual.py --self-test: "self-test: 41/41 controls pass", rc 0.
+A9  git -C pythia diff --stat -- rules: the two files (3 and 23 lines changed); pythia HEAD still 94444e2, no commit
+    added by the run; CONTEXT_neutral-names.md lines 9, 13 and 220 each record the operator's 2026-11-10 reversal.
+Integrity  residual.py <worktree> HEAD: rc 0; its only REAL hit sat in this record (line 178, the previous re-test's
+    wording) and was reworded in this round. residual.py reads the committed blob, so it reports that hit until
+    planloop commits this record; residual.classify on the edited working file finds 0 REAL hits, and the A1 regex
+    finds 0 lines in it. git diff --check fa2cc18..HEAD: 0 lines;
+    git diff --name-status -M: 1 rename (R); touched files not i/lf: 0.
+
+Fix made in this round
+- verification_row-wording.txt:178: one word of the previous re-test's text reworded ("the review loop's end"), so the
+  record holds no REAL residual hit. No source, test or rule file was changed.
+
+Not done here
+- Stage 2 (stored workloads against master), the merge, the pythia-dev commit and every push: out of scope per brief.
+- The helpers infer the rename map from the diff instead of reading rows 2, 6 and 9; the inferred 10 names match the
+  identifier map the implementation's record lists.
+- Cleanup after the verdict: temp_row-wording/ (helpers and logs) and the numba caches under
+  src/utils/performance/gradient_/__pycache__ and perseries_/__pycache__ were removed.
 No decision was escalated.
 
 
