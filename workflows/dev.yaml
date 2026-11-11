@@ -3,14 +3,14 @@ general:
 
 trigger:
   read:
-    printout_io: false # DataFrame shapes/contents at read stage
+    printout_io: true # DataFrame shapes/contents at read stage
   preprocess:
-    printout_io: false # DataFrame shapes/contents after cleaning
+    printout_io: true # DataFrame shapes/contents after cleaning
   strategy:
-    printout_io: false # DataFrame shapes/contents after trigger detection
-    printout_debug: false # Event begins, ends, trigger summary, trigger counts
+    printout_io: true # DataFrame shapes/contents after trigger detection
+    printout_debug: true # Event begins, ends, trigger summary, trigger counts
     full_output: false # If true, print all rows instead of first/last 10
-    plot_debug: false # Debug plots per iteration in realistic mode
+    plot_debug: true # Debug plots per iteration in realistic mode
 
 signal:
   input:

@@ -23,9 +23,9 @@ from typing import List, Tuple
 
 import luigi
 
-from src.tasks.performance import Performance
-from src.tasks.signal import Signal
 from src.tasks.trigger import Trigger
+from src.tasks.signal import Signal 
+from src.tasks.performance import Performance
 from src.utils.common.config import load_config, validate_config
 from src.utils.common.schema import AppConfig
 from src.utils.common.outputs import (
