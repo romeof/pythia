@@ -11,7 +11,7 @@ runs or checks the audit's own records shows none.
 | `exp01pairing.py` | Ideal-mode pairing (HYP-01, Q16), `end_reason` on cleaned rows (HYP-02), plateau extrema (HYP-22) | `tests/idealpairing.py`, `tests/idealend.py`, `tests/plateauextrema.py` |
 | `exp02recording.py` | Trigger decisions independent of the `trigger_value` recording mode (HYP-03) | `tests/gatemodes.py` (recording independence) |
 | `exp03effectivestart.py` | One positional effective start per stage (HYP-04, Q2) | `tests/effectivestart.py` |
-| `exp04prefix.py` | No future rows in realistic mode (R-T7), the length guards (R-T4), the gate's previous-bar dependence (HYP-03) | `tests/replayvalidation.py` (no future rows, the length boundary), `tests/gatemodes.py` (the gate's previous-bar dependence) |
+| `exp04prefix.py` | No future rows in realistic mode (R-T7), the length guards (R-T4), the gate's previous-row dependence (HYP-03) | `tests/replayvalidation.py` (no future rows, the length boundary), `tests/gatemodes.py` (the gate's previous-row dependence) |
 | `exp05defaults.py` | Schema defaults, strict validation and merge precedence (HYP-05, Q11, R-X2, R-X6) | `tests/schemadefaults.py`, `tests/configcontract.py`; merge precedence (R-X6): none |
 | `exp06returncode.py` | Return code and failure visibility (HYP-08, HYP-24, HYP-27, KNOWN (b)) | `tests/returncode.py`, `tests/configcontract.py`, `tests/zerosignals.py`, `tests/luigibuild.py` |
 | `exp07partialwrite.py` | Partial writes, crash consumption and soft write failures (HYP-07, HYP-09, HYP-28, HYP-29, HYP-30) | `tests/atomicwrite.py`, `tests/readfailure.py`, `tests/referenceloader.py`, `tests/persistfailure.py`, `tests/preprocessfailure.py`, `tests/referencefailure.py` |

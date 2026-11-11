@@ -2,7 +2,7 @@
 
 Runs the planted-defect control of the completeness check, launches pipeline.py of the
 source root through the harness's child launcher (probe first), checks the run's
-completeness on the pipeline child's own log, and copies data\\2026_09_25_0 to the run's
+completeness on the pipeline child's own log, and copies data\\reference to the run's
 never-reused label with a manifest.
 
 Structure:
@@ -172,7 +172,7 @@ def check_file_list(outputs: Path, reference: Path) -> None:
 
 
 def copy_run(run_label: str) -> None:
-    """Copy data\\2026_09_25_0 to data\\<label>\\2026_09_25_0 (never reused) and write its manifest."""
+    """Copy data\\reference to data\\<label>\\reference (never reused) and write its manifest."""
     destination = CTX.roots.data / run_label
     CTX.guard(destination)
     if destination.exists():

@@ -6,11 +6,11 @@ Inputs are positional (`series_id`, `var0`-`var5` and the gate columns `trigger.
 
 ## Input requirements
 
-- Each series holds numeric `var0`-`var5` on a datetime index of observed dates; daily bars and weekly bars stamped on Saturdays (W-SAT) are the tested resolutions, and every horizon parameter counts bars, never calendar days.
+- Each series holds numeric `var0`-`var5` on a datetime index of observed dates; daily rows and weekly rows stamped on Saturdays (W-SAT) are the tested resolutions, and every horizon parameter counts rows, never calendar days.
 - `var3` drives trigger detection and the end checks.
 - `var3` and the recorded column (`var3` or `var0`, as `trigger.trigger_value` selects) must be positive: the end checks divide by the begin value of `var3`, each event's variation by that of the recorded column.
 - The validity rules come from `trigger.validity`: preprocessing removes a row that fails one, and a row holding a NaN in `var0`-`var5` always.
-- Each series holds every gate column `trigger.gate.items` names, read beside `var0`-`var5`; a NaN there marks a bar without a value. A gate column outside `var0`-`var5` never removes a row; a value column an item names is cleaned as before. A series without a configured gate column fails the run: the trigger task logs one `Task failed` record whose `ValueError` names the column and the series, no later task or mode runs, and the process returns a non-zero code.
+- Each series holds every gate column `trigger.gate.items` names, read beside `var0`-`var5`; a NaN there marks a row without a value. A gate column outside `var0`-`var5` never removes a row; a value column an item names is cleaned as before. A series without a configured gate column fails the run: the trigger task logs one `Task failed` record whose `ValueError` names the column and the series, no later task or mode runs, and the process returns a non-zero code.
 
 ## Pipeline
 
@@ -20,7 +20,7 @@ Three sequential tasks orchestrated by Luigi:
 Raw HDF5 → [Trigger] → [Signal] → [Performance]
 ```
 
-**Trigger** — Reads series from HDF5, preprocesses them (removes rows that fail the validity rules), and detects directional events (trigger begins and ends) using a configurable strategy; a begin needs its previous bar to pass every gate item (`trigger.gate.items`) that applies to the series. Supports two replay modes: `realistic` (incremental, no future rows) and `ideal` (full-series visibility).
+**Trigger** — Reads series from HDF5, preprocesses them (removes rows that fail the validity rules), and detects directional events (trigger begins and ends) using a configurable strategy; a begin needs its previous row to pass every gate item (`trigger.gate.items`) that applies to the series. Supports two replay modes: `realistic` (incremental, no future rows) and `ideal` (full-series visibility).
 
 **Signal** — Groups triggers from multiple series based on temporal overlap and Pearson correlation. Selects one representative signal per group.
 
@@ -40,11 +40,12 @@ Input HDF5 files are not in git; they sit outside the repo, in the `data/` folde
 
 | Workflow | File | Size | MD5 |
 |---|---|---|---|
-| `extrema` (daily bars) | `../data/2026_09_25_0/0/raw/0.h5` | 2,184,784 bytes | `f296cfb9bfef57ab95a70e6310c09b6f` |
-| `extrema_weekly` (weekly bars, W-SAT) | `../data/2026_09_25_1/0/raw/0.h5` | 857,111 bytes | `0f546e9cbc3ec38ca9f54e75ecc87cb1` |
+| `extrema` (daily rows) | `../data/reference/0/raw/0.h5` | 2,184,784 bytes | `f296cfb9bfef57ab95a70e6310c09b6f` |
+| `extrema_weekly` (weekly rows, W-SAT) | `../data/2026_09_25_1/0/raw/0.h5` | 857,111 bytes | `0f546e9cbc3ec38ca9f54e75ecc87cb1` |
 
 The listed files hold `var10`-`var15` beside `var0`-`var5`; both workflows' gate items read `var12` and `var15` from them. An input without a column a gate item names fails with the missing-column error of the input requirements.
-Nothing else is needed: the per-category folders that sit beside each file in `../data/2026_09_25_<n>/0/raw/` hold the single-series files it was merged from, by the upstream pipeline that produced it, and are not read by the pipeline.
+The daily file is the permanent reference input: a later extension is validated by comparing its results on this file with the results established on it.
+Nothing else is needed: the per-category folders in `../data/2026_09_25_<n>/0/raw/` hold the single-series files each listed file was merged from, by the upstream pipeline that produced it, and are not read by the pipeline.
 
 **If a listed file is missing, the run that reads it fails:** the trigger task logs one `Task failed` record naming the `FileNotFoundError` (`[Errno 2]` and the missing path) and no `Error in producer` line, no later task or mode runs, and the process returns a non-zero code; rerun with `--quiet-luigi False` for Luigi's own report.
 
@@ -76,7 +77,7 @@ python pipeline.py --task all --strategy extrema --profile dev
 | Flag | Values | Default | Description |
 |---|---|---|---|
 | `--task` | `trigger`, `signal`, `performance`, `all` | `trigger` | Task(s) to run |
-| `--strategy` | name of a strategy YAML in `workflows/` (not a profile: `dev`, `prod`); currently `extrema` (daily bars) and `extrema_weekly` (weekly bars) | `extrema` | Workflow config to load |
+| `--strategy` | name of a strategy YAML in `workflows/` (not a profile: `dev`, `prod`); currently `extrema` (daily rows) and `extrema_weekly` (weekly rows) | `extrema` | Workflow config to load |
 | `--profile` | `dev`, `prod` | `prod` | Switch profile merged with the strategy: `dev` writes the plots and printouts of `workflows/dev.yaml`; `prod` writes no plot or printout |
 | `--quiet-luigi` | `True` / `False` | `True` | Suppress Luigi scheduler logs |
 
@@ -93,7 +94,7 @@ python pipeline.py --task performance --strategy extrema --profile dev
 Each strategy maps to a YAML file in `workflows/`; it is merged with the profile `--profile` names, `workflows/dev.yaml` or `workflows/prod.yaml` (print/plot/debug switches), which must exist beside it. Key sections:
 
 - `read` — input HDF5 path, date range, series filter, reference series
-- `trigger` — the gate on the previous bar (`gate`: its items and the pre-filter), row validity rules, recording mode (`trigger_value`), detection strategy parameters, replay mode, end conditions
+- `trigger` — the gate on the previous row (`gate`: its items and the pre-filter), row validity rules, recording mode (`trigger_value`), detection strategy parameters, replay mode, end conditions
 - `signal` — correlation threshold, lookback period, signal selection criterion
 - `performance` — weight allocation, variation aggregation method, attenuation rate, metric display order
 
@@ -111,7 +112,7 @@ Outputs are written under `read.output_root` (`./data` in `workflows/extrema.yam
 <output_root>/<date>/<dataset>/<strategy>/<parameters>/<mode>/<task>/<input file name>
 ```
 
-For the default workflow: `data/2026_09_25_0/0/extrema/var12ge0_83x0-var15ge0_73__w7md5p0_05/{ideal,realistic}/{trigger,signal,performance}/0.h5`; for the weekly workflow: `data/2026_09_25_1/0/extrema/var12ge0_83x0-var15ge0_73__w7md1p0_05/{ideal,realistic}/{trigger,signal,performance}/0.h5` (`<strategy>` is `trigger.strategy.strategy_name`, not the `--strategy` value). The `<parameters>` folder names the gate items, joined by `-` (`var12ge0_83x0` is `var12 >= 0.83` exempting series `0`; `nogate` for none), then the extrema parameters, never `trigger.gate.prefilter`. It also receives copies of the strategy YAML, which records the pre-filter switch, and the run's profile YAML (`<profile>.yaml`) plus `git_info.txt` (commit, branch, remote) of a completed run; the run needs git and a repository with an `origin` remote.
+For the default workflow: `data/reference/0/extrema/var12ge0_83x0-var15ge0_73__w7md5p0_05/{ideal,realistic}/{trigger,signal,performance}/0.h5`; for the weekly workflow: `data/2026_09_25_1/0/extrema/var12ge0_83x0-var15ge0_73__w7md1p0_05/{ideal,realistic}/{trigger,signal,performance}/0.h5` (`<strategy>` is `trigger.strategy.strategy_name`, not the `--strategy` value). The `<parameters>` folder names the gate items, joined by `-` (`var12ge0_83x0` is `var12 >= 0.83` exempting series `0`; `nogate` for none), then the extrema parameters, never `trigger.gate.prefilter`. It also receives copies of the strategy YAML, which records the pre-filter switch, and the run's profile YAML (`<profile>.yaml`) plus `git_info.txt` (commit, branch, remote) of a completed run; the run needs git and a repository with an `origin` remote.
 
 | Task | Output | Contents |
 |---|---|---|

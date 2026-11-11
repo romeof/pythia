@@ -87,6 +87,9 @@ class Read:
                 "This file format is not supported."
             )
         encoding = group.attrs["index_encoding"]
+        # The encoding names the unit of the stored timestamps, not the bar spacing: index_ts_s counts seconds
+        # and index_days counts days. Daily bars and weekly bars (each dated on its Saturday,
+        # W-SAT) are both stored as day counts, so both decode under epoch_days; the dates carry the spacing.
         if encoding == "epoch_seconds":
             return pd.to_datetime(group["index_ts_s"][()], unit="s")
         if encoding == "epoch_days":

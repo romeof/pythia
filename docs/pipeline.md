@@ -1,10 +1,3 @@
----
-#marp: true
-theme: default
-paginate: true
-size: 16:9
----
-
 # Pipeline
 
 ## Brief Summary
@@ -20,6 +13,16 @@ The pipeline flowchart, Mermaid source [`mmflowcharts/pipeline.mmd`](mmflowchart
 
 **Execution** — How the configuration is validated, how the tasks run, and how a failure ends the run (see below).
 
+### Input
+
+data in `pythia\data\reference\0\raw\0.h5`
+
+### Output
+
+data produced with command `python pipeline.py --task all --strategy extrema --profile dev`
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\{trigger,signal,performance}\0.h5`
+
 ---
 
 ## Trigger
@@ -28,7 +31,7 @@ The **Trigger** step processes time series data to detect triggers (begin/end) u
 
 **Tasks**
 1. **Read** — Load time series from HDF5, with user-defined criteria.
-2. **Gate Pre-filter** — Fail the run on a series without a configured gate column; with `trigger.gate.prefilter` set to `true`, skip a non-reference series that one applicable gate item passes on no bar of the read window.
+2. **Gate Pre-filter** — Fail the run on a series without a configured gate column; with `trigger.gate.prefilter` set to `true`, skip a non-reference series that one applicable gate item passes on no row of the read window.
 3. **Preprocess** — Remove the rows that fail the `trigger.validity` rules; a row with a NaN in `var0`-`var5` always.
 4. **Trigger Detection** — Detect starting triggers (trigger-begins) according to a given strategy and their trigger-ends according to a set of user-specified conditions.
 5. **Trigger Extraction** — Pair begin/end dates per direction, read precomputed `trigger_value`, and separate triggers as plus/minus and true/false.

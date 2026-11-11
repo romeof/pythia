@@ -1,10 +1,3 @@
----
-#marp: true
-theme: default
-paginate: true
-size: 16:9
----
-
 # Signal
 
 ## Brief Summary
@@ -15,6 +8,16 @@ The **Signal** step groups triggers produced by the Trigger task into signal-win
 1. **Accumulation** — Collect per-series value columns (`var3`, `trigger_value`) and triggers into a single collector via producer-consumer streaming.
 2. **Selection** — Assign group IDs based on time overlap, correlation threshold, and signal_criterion; mark signal rows dynamically.
 3. **Persistence** — Write groups table, signal series, and reference series to a new HDF5 file.
+
+### Input
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\trigger\0.h5`
+
+### Output
+
+data produced with command `python pipeline.py --task signal --strategy extrema --profile dev`
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\signal\0.h5`
 
 ---
 
@@ -192,7 +195,7 @@ A second signal is created precisely because a trigger inside an existing signal
 
 - **Nonstationarity** — correlations shift over time; the pair (A, B) may have been weakly correlated when B became a signal but strongly co-move by the time C's lookback window is evaluated.
 - **Shared drivers** — an external factor causes A and B to co-move specifically during C's window, independently of their earlier relationship.
-- **Parameter sensitivity** — short or noisy lookback windows, or a small `corr_threshold`, increase the probability that both correlations clear the bar.
+- **Parameter sensitivity** — short or noisy lookback windows, or a small `corr_threshold`, increase the probability that both correlations exceed the threshold.
 
 **Design rationale**
 

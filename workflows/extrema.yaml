@@ -1,5 +1,5 @@
 read:
-  raw_data: "../data/2026_09_25_0/0/raw/0.h5"
+  raw_data: "../data/reference/0/raw/0.h5"
   output_root: "./data"
   ini_date: "2019-01-01"
   end_date: "2021-09-03" 

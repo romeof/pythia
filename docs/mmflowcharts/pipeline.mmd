@@ -3,7 +3,7 @@ flowchart LR
 
     subgraph T ["1. TRIGGER"]
         direction TB
-        T1["1.1 Read<br/>Load time series from HDF5"] --> T2["1.2 Gate Pre-filter<br/>Check the gate columns;<br/>skip non-reference series<br/>one applicable item<br/>passes on no bar"] --> T3["1.3 Preprocess<br/>Remove invalid rows"] --> T4["1.4 Trigger Detection<br/>Detect trigger-begins<br/>and trigger-ends"] --> T5["1.5 Trigger Extraction<br/>Pair begin/end dates<br/>Classify plus/minus & true/false"] --> T6["1.6 Reference Handling<br/>Save pre-preprocessing<br/>reference series"]
+        T1["1.1 Read<br/>Load time series from HDF5"] --> T2["1.2 Gate Pre-filter<br/>Check the gate columns;<br/>skip non-reference series<br/>one applicable item<br/>passes on no row"] --> T3["1.3 Preprocess<br/>Remove invalid rows"] --> T4["1.4 Trigger Detection<br/>Detect trigger-begins<br/>and trigger-ends"] --> T5["1.5 Trigger Extraction<br/>Pair begin/end dates<br/>Classify plus/minus & true/false"] --> T6["1.6 Reference Handling<br/>Save pre-preprocessing<br/>reference series"]
     end
 
     subgraph S ["2. SIGNAL"]

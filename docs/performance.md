@@ -1,10 +1,3 @@
----
-#marp: true
-theme: default
-paginate: true
-size: 16:9
----
-
 # Performance
 
 ## Brief Summary
@@ -20,6 +13,16 @@ It uses:
 2. **Gradient analysis** — Build filtered signal segments, aggregate total variation (pure and attenuation-adjusted in a single pass), apply optional per-event deduction, print/plot gradient outputs.
 3. **Gradient metrics** — Compute aggregate-level metrics (variation rate, dispersion ratios, fall from the running maximum, reference-relative coefficients) on the cumulative variation series, separately for pre-attenuation and post-attenuation curves.
 4. **Persistence** — Save enriched `/signals`, optional `/strategy_name`, and gradient plot reconstruction data (see HDF5 schema below).
+
+### Input
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\trigger\0.h5` and `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\signal\0.h5`
+
+### Output
+
+data produced with command `python pipeline.py --task performance --strategy extrema --profile dev`
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\performance\0.h5`
 
 ---
 
@@ -267,7 +270,7 @@ Model periodic base-value deductions (e.g. an annual amount proportional to the 
 4. Each attenuation computes:
    - `v_start = 1 + total_cum[year_start]` — total value at start of the calendar year.
    - `v_end = 1 + total_cum[year_end]` — total value at end of the calendar year.
-   - `increase = max(0, v_end − v_start)` — the year's increase, clamped at zero (no attenuation on a year that decreases). The base runs from the year's first to its last observed date, so the interval from a year's last observed date to the next year's first lies in no year's base: one bar interval a year, so one week a year on weekly bars.
+   - `increase = max(0, v_end − v_start)` — the year's increase, clamped at zero (no attenuation on a year that decreases). The base runs from the year's first to its last observed date, so the interval from a year's last observed date to the next year's first lies in no year's base: one interval between consecutive rows a year, so one week a year on a weekly series.
    - `attenuation_amount = yearly_attenuation_fraction × increase`.
 5. Subtract `attenuation_amount` from `total_cum[attenuation_date:]` (all rows from `attenuation_date` onward), reducing the compounding base in-place.
 6. Accumulate `attenuation_amount` into a running `cumulative_attenuation` counter for use by `multiplicative_total_before_active_signals` mode.
@@ -377,7 +380,7 @@ which is identical to `v_t / v_{t-1} − 1` because the initial value cancels.
 
 ### Minimal Positive Variation Rate (`mpv`)
 
-`performance.gradient.mpv` is a decimal threshold per bar of the curve index (e.g. `0.0002` ≈ 0.02% per period on daily bars; a weekly run sets the same annual baseline with about five times that value) acting as a baseline that the strategy must clear before a period counts as positive. It is used by every dispersion-normalized ratio (`snr`, `snr_dw`, `sens_dw`, `exv`, `exv_dw`) so that:
+`performance.gradient.mpv` is a decimal threshold per row of the curve index (e.g. `0.0002` ≈ 0.02% per period on a daily series; a weekly run sets the same annual baseline with about five times that value) acting as a baseline that the strategy must clear before a period counts as positive. It is used by every dispersion-normalized ratio (`snr`, `snr_dw`, `sens_dw`, `exv`, `exv_dw`) so that:
 - `snr` / `snr_dw` measure excess over `mpv` rather than excess over zero.
 - `snr_dw` and `sens_dw` count any period below `mpv` as a downside breach.
 - `exv` / `exv_dw` correct the intercept by `mpv × (1 − sens)` to remain consistent with the dispersion treatment.

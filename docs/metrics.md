@@ -1,10 +1,3 @@
----
-#marp: true
-theme: default
-paginate: true
-size: 16:9
----
-
 # Metrics
 
 ## Brief Summary
@@ -19,6 +12,16 @@ All metric definitions, labels, and group assignments live in their respective `
 **Example Output (only selected metrics shown)**
 
 The summary table printed after each per-series block and drawn under the plots: the signal metrics in a transposed layout, the columns the three directions (`plus+minus`, `plus`, `minus`) times the three outcome groups (`true+false`, `true`, `false`), the rows the signal count (`Signals`) and then the keys of `performance.metrics.display_order_signals`; under the gradient plot a second table follows, the gradient metrics with one column for the strategy and one per reference series, its rows the keys of `performance.metrics.display_order_gradient`.
+
+### Input
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\trigger\0.h5` and `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\signal\0.h5`
+
+### Output
+
+data produced with command `python pipeline.py --task performance --strategy extrema --profile dev`
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\performance\0.h5`
 
 ---
 

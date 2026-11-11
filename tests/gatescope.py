@@ -43,7 +43,7 @@ SERIES = ("0", "1", "2")
 PASSING, FAILING_VAR12, FAILING_VAR15 = 1.0, 0.2, 0.5
 VAR15_ITEM = testkit.gate_item("var15", ">=", 0.73)
 SWITCHES = {"on": True, "off": False}
-SKIP_RECORD = "Skipping series 1: gate item var15 >= 0.73 passes on no bar of the read window"
+SKIP_RECORD = "Skipping series 1: gate item var15 >= 0.73 passes on no row of the read window"
 MISSING_MESSAGE = "series 0 lacks the configured gate columns ['var12']"
 SERIES_KEY, TRIGGERS_PREFIX, REFERENCE_PREFIX = "/series_", "/triggers_", "/reference_series_"
 

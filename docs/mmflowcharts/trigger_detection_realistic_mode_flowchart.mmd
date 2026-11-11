@@ -7,7 +7,7 @@ subgraph Trigger_Detection["Phase 1: New trigger candidate selection detection"]
     direction TB
         WindowSelect["Select Window (_window_bounds):<br>expanding or rolling"]
         DetectBegin["Candidates and turning-point count<br>from the window's var3 values<br>(_begin_candidate_rows);<br>window frame only for the debug plots<br>and the different-end mode"]
-        FindCandidate["Find new trigger candidate passing:<br>- Temporal constraint<br>- Gate on bar i-1<br>"]
+        FindCandidate["Find new trigger candidate passing:<br>- Temporal constraint<br>- Gate on row i-1<br>"]
         MonitorActive{"Active trigger<br>exists?"}
         IfActive["Strict same-type rejection or pending opposite"]
   end

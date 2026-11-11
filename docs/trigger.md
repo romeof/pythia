@@ -1,10 +1,3 @@
----
-#marp: true
-theme: default
-paginate: true
-size: 16:9
----
-
 # Trigger
 
 ## Brief Summary
@@ -13,18 +6,53 @@ The **Trigger** step processes time series data to detect triggers (begin/end) u
 
 **Tasks**
 1. **Read** — Load time series from HDF5, with user-defined criteria.
-2. **Gate Pre-filter** — Fail the run on a series without a configured gate column; with `trigger.gate.prefilter` set to `true`, skip a non-reference series that one applicable gate item passes on no bar of the read window.
+2. **Gate Pre-filter** — Fail the run on a series without a configured gate column; with `trigger.gate.prefilter` set to `true`, skip a non-reference series on which an applicable gate item does not hold on any row of the read window.
 3. **Preprocess** — Remove the rows that fail the `trigger.validity` rules; a row with a NaN in `var0`-`var5` always.
 4. **Trigger Detection** — Detect starting triggers (trigger-begins) according to a given strategy and their trigger-ends according to a set of user-specified conditions.
 5. **Trigger Extraction** — Pair begin/end dates per direction, read precomputed `trigger_value`, and separate triggers as plus/minus and true/false.
 6. **Reference Handling** — Optionally save post-read, pre-preprocessing series data for configured reference series, trimmed by lookback window.
+
+### Input
+
+data in `pythia\data\reference\0\raw\0.h5`
+
+### Output
+
+data in `pythia\pythia\data\reference\0\extrema\var12ge0_83x0-var15ge0_73__w7md5p0_05\{ideal,realistic}\trigger\0.h5`
+
+data produced with command (PowerShell, from `pythia\pythia`; it runs the trigger task alone and processes series `0` alone, so the printout in `trigger_printout.txt` follows the execution sequence, and restores `workflows\extrema.yaml` afterwards):
+
+```powershell
+cd C:\Users\ziosa\Desktop\work\cld\pythia\pythia
+$utf8 = New-Object Text.UTF8Encoding($false)
+$cfg  = (Resolve-Path 'workflows\extrema.yaml').Path
+$text = [IO.File]::ReadAllText($cfg)
+$new  = $text -replace 'skip_series: \[\]', 'skip_series: ["1", "2", "3", "4", "5"]'
+if ($new -eq $text) { throw 'skip_series: [] not found in extrema.yaml' }
+try {
+    [IO.File]::WriteAllText($cfg, $new, $utf8)
+    $env:PYTHONUTF8 = '1'
+    cmd /c ".venv\Scripts\python.exe -u pipeline.py --task trigger --strategy extrema --profile dev > trigger_printout.txt 2>&1"
+} finally {
+    [IO.File]::WriteAllText($cfg, $text, $utf8)
+}
+```
+
+#### What you get
+
+- `trigger_printout.txt`, the printouts of series `0` in execution sequence, the Ideal run, then the Realistic run (`trigger.replay.mode` `"dual"`):
+  1. Ideal: `READING HDF5 FILE` → `TRIGGER - READ` → `TRIGGER - PREPROCESS` → `TRIGGER - OUTPUT` → `TRIGGER - OUTCOME`.
+  2. Realistic: `READING HDF5 FILE` → `TRIGGER - READ` → `TRIGGER - PREPROCESS` → `TRIGGER - DETECTION` → `TRIGGER - OUTPUT` → `TRIGGER - OUTCOME`.
+- Per mode, in `<mode>\trigger\`: `0.h5` holding `/series_0`, `/triggers_0` and `reference_series_0`, series `0` only, and `0_preprocess_report.txt`.
+- Realistic mode only, with `trigger.strategy.plot_debug` set to `true` in `workflows\dev.yaml`: the debug plots in `realistic\trigger\plots\0\`, one figure per suppressed candidate (`<row>_s<n>_th.png`) and per ended or still-active trigger (`<row>_e<n>_th.png`), drawn as described under **Realistic Mode Trigger Begin**. Ideal mode has none: it detects in one pass over the series, with no window, detection lag or suppression reason for a figure to explain.
+- In the strategy folder: the copies `extrema.yaml`, which records the `skip_series` of the run, `dev.yaml` and `git_info.txt`.
 
 ---
 ## Read
 
 **Purpose**
 
-Stream time series from an HDF5 file one series at a time, decode the datetime index, apply date filtering, and yield `(series_id, DataFrame)` tuples. Daily bars and weekly bars stamped on Saturdays (W-SAT) are the tested resolutions; every horizon parameter counts rows (bars), so any other spacing of observed dates reads the same way, untested.
+Stream time series from an HDF5 file one series at a time, decode the datetime index, apply date filtering, and yield `(series_id, DataFrame)` tuples. Daily series and weekly series stamped on Saturdays (W-SAT) are the tested resolutions; every horizon parameter counts rows, so any other spacing of observed dates reads the same way, untested.
 
 **Output**
 
@@ -54,19 +82,22 @@ With `trigger.read.printout_io` set to `true`: a file block (`READING HDF5 FILE:
 
 **Purpose**
 
-Fail the run on a series that lacks a configured gate column and, with the pre-filter on, skip a non-reference series that one applicable gate item passes on no bar. Both checks run in the trigger task producer, after reading and before preprocessing.
+Check each series in the trigger task producer, after reading and before preprocessing:
+
+1. **Missing gate column → the run fails.** A series without a column that `trigger.gate.items` names stops the run, whether `trigger.gate.prefilter` is on or off.
+2. **Gate item never met → the series is skipped.** With `trigger.gate.prefilter` set to `true`, a series that is not a reference series is kept only if each gate item that applies to it (one whose `exempt_series` does not name it) is satisfied on at least one row of the read window (`read.ini_date` to `read.end_date`); the rows may differ between items, and a NaN counts as not satisfied. Otherwise the series is skipped.
 
 **Output**
 
-None but one INFO record per skipped series: `Skipping series <id>: gate item <column> <op> <threshold> passes on no bar of the read window`.
+None but one INFO record per skipped series: `Skipping series <id>: gate item <column> <op> <threshold> passes on no row of the read window`.
 
 **Logic**
 1. Check that the series holds every column `trigger.gate.items` names, whether or not the pre-filter is on.
-2. With `trigger.gate.prefilter` set to `true` and a series outside `read.reference_series`: test the items that apply to the series, those whose `exempt_series` does not name it, in their configured sequence on the date-filtered raw frame; the first item that passes on no bar skips the series (no preprocessing, no trigger detection, no reference capture).
+2. With `trigger.gate.prefilter` set to `true` and a series outside `read.reference_series`: test the items that apply to the series, those whose `exempt_series` does not name it, in their configured sequence on the date-filtered raw frame; the first item that does not hold on any row skips the series (no preprocessing, no trigger detection, no reference capture).
 
 **Data Conditions**
 - A configured gate column absent from a series → `ValueError` naming the column and the series; the run fails with one `Task failed` record, with the pre-filter on or off.
-- One applicable item passing on no bar of the read window → series skipped; a series on which each item passes on some bar, even never all on one bar, is kept. A NaN passes no item.
+- One applicable item that does not hold on any row of the read window → series skipped; a series on which each item holds on some row, even never all on one row, is kept. A NaN passes no item.
 - A reference series is never skipped.
 - A skipped series writes no `/series_<id>`, so its dates leave the performance curve index: the switch can change the gradient curve's dates, never a trigger or a reference series.
 
@@ -94,7 +125,7 @@ With `trigger.preprocess.printout_io` set to `true`, per series a `TRIGGER - PRE
 
 **Data Conditions**
 - Apply the NaN check, then each `trigger.validity` rule that lists a column, in this sequence and each over every row: a failing row gets `False` in the mask and a report line under the reason (`<columns>`: the rule's columns, comma-separated):
-  1. **NaN check** (always) — rows with a NaN in `var0`-`var5`; reason `Contains NaN values`. A gate column outside `var0`-`var5`, NaN where a bar holds no value, never removes a row.
+  1. **NaN check** (always) — rows with a NaN in `var0`-`var5`; reason `Contains NaN values`. A gate column outside `var0`-`var5`, NaN where a row holds no value, never removes a row.
   2. **`nonnegative`** — rows with a negative value in a listed column; reason `Fails nonnegative (<columns>)`.
   3. **`nonzero`** — rows with a zero in a listed column; reason `Fails nonzero (<columns>)`.
   4. **`not_all_equal`** — rows whose listed columns all hold one value; reason `Fails not_all_equal (<columns>)`. A NaN fails no rule.
@@ -116,7 +147,7 @@ With `trigger.strategy.printout_debug` set to `true` (Realistic mode), per serie
 With `trigger.strategy.printout_io` set to `true`, per series a `TRIGGER - OUTPUT` block: the shape after detection, the date range, the columns, the rows that hold a trigger flag or an end reason, and the first and last 10 rows.
 
 **Decision Logic vs Recording**
-- **`var3`** drives trigger detection, end conditions and breach checks, and the gate reads the gate columns of the previous bar; neither reads `trigger_value`, so strategy behavior is independent of the recording configuration.
+- **`var3`** drives trigger detection, end conditions and breach checks, and the gate reads the gate columns of the previous row; neither reads `trigger_value`, so strategy behavior is independent of the recording configuration.
 - **`trigger_value`** ONLY used to record/store values at trigger begin/end for output and performance measurement. Configurable via `trigger.trigger_value`.
 
    **Example**
@@ -126,7 +157,7 @@ With `trigger.strategy.printout_io` set to `true`, per series a `TRIGGER - OUTPU
 **Sub-tasks**
 - Validate data length according to **Data Conditions**.
 - Add the `trigger_value` column according to the configured mode (`detection_row` or `following_row`) — for recording only.
-- Compute the begin vector of the gate on the previous bar, once per series (see **Data Conditions**).
+- Compute the begin vector of the gate on the previous row, once per series (see **Data Conditions**).
 - Dispatch to realistic or ideal mode based on `trigger.replay.mode`.
 - Active Flags: Mark `active_trigger_plus_begin` or `active_trigger_minus_begin` at latest begin index if that begin was removed during cleaning.
 
@@ -137,7 +168,7 @@ With `trigger.strategy.printout_io` set to `true`, per series a `TRIGGER - OUTPU
 - A point that `find_peaks` reports on `−var3` is a minimum and gets a plus begin, and one it reports on `var3` is a maximum and gets a minus begin, plateaus included.
 - The `find_peaks` prominence floor is `trigger.strategy.prominence_threshold` × the `var3` range of the data the mode sees: the window in Realistic mode, the whole series in Ideal mode.
 - The effective start is `df.index[trigger.replay.lookback_window − 1]` of the date-filtered, preprocessed frame; the realistic loop, the extraction filter and the reference trimming use it, and the gradient curve's index starts at the earliest effective start over the processed series.
-- The gate on the previous bar: a begin on row `i` of the date-filtered, preprocessed frame is allowed only when row `i − 1` passes every item of `trigger.gate.items` that applies to the series, `value op threshold` in the column's dtype; a NaN fails, and row 0, which has no previous bar, is never allowed. Ideal mode applies it to the extremum rows, Realistic mode to the activation row; both read one vector computed once per series, whatever `trigger.trigger_value` records.
+- The gate on the previous row: a begin on row `i` of the date-filtered, preprocessed frame is allowed only when row `i − 1` passes every item of `trigger.gate.items` that applies to the series, `value op threshold` in the column's dtype; a NaN fails, and row 0, which has no previous row, is never allowed. Ideal mode applies it to the extremum rows, Realistic mode to the activation row; both read one vector computed once per series, whatever `trigger.trigger_value` records.
 - `trigger.strategy.window_size` names the output folder and feeds no detection logic.
 
 **Parameters**
@@ -214,7 +245,7 @@ The realistic loop's flowchart, Mermaid source [`mmflowcharts/trigger_detection_
 ### Ideal Mode
 **Logic**
 - Trigger Begin: Generate begin triggers using full series visibility via `_generate_trigger_begin(df)`.
-- Gate Suppression: Zero-out the begin flags of every row whose previous bar fails an item of `trigger.gate.items` that applies to the series, row 0 included (fully vectorized).
+- Gate Suppression: Zero-out the begin flags of every row whose previous row fails an item of `trigger.gate.items` that applies to the series, row 0 included (fully vectorized).
 - Trigger End: Generate end triggers using full series visibility via `_generate_trigger_end(df)`: the ends are the opposite begins the gate left, so a blocked begin also removes the opposite trigger's end on its row.
 - Duplicate Cleaning: Apply rising-edge pass to remove duplicate triggers; pair begins with ends per signal type, dropping unmatched items.
 - Overlap Removal: Remove overlapping intervals across plus/minus pairs (chronological order, first pair wins).

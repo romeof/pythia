@@ -21,9 +21,9 @@ the audit records of the pipeline: `Q` a design question the operator decided, `
 | G-12 | pipeline.md, Execution | A consumer reads until the producer's sentinel, so no item is left unread, and a producer that ends without it fails the task after one queue timeout instead of hanging. |
 | Q1 | trigger.md, Trigger Detection | The prominence floor is relative to the data the mode sees, the window in Realistic mode and the whole series in Ideal mode, by design; the two modes are not meant to find the same triggers. |
 | Q2 | trigger.md, Trigger Detection | One effective start, counted in rows of the preprocessed frame, serves the realistic loop, the extraction filter, the reference trimming and the gradient index; a second, calendar-based start disagreed with it by three days. |
-| Q3 | trigger.md, Trigger Detection | The gate reads the previous bar's gate columns in both modes, so the recorded value never changes a decision. |
+| Q3 | trigger.md, Trigger Detection | The gate reads the previous row's gate columns in both modes, so the recorded value never changes a decision. |
 | Q4 | performance.md, Weight Constraint Validation | On a shared date the sweep takes end events before begin events, so a signal that begins the day another ends is not concurrent with it; a zero-length signal's own end follows that day's begins, so it still counts on its day. |
-| Q5 | trigger.md, Gate Pre-filter | Superseded by the gate pre-filter: the total-magnitude filter is removed, and a series is skipped only when one applicable gate item passes on no bar of the read window, never a reference series. |
+| Q5 | trigger.md, Gate Pre-filter | Superseded by the gate pre-filter: the total-magnitude filter is removed, and a series is skipped only when one applicable gate item passes on no row of the read window, never a reference series. |
 | Q6 | trigger.md, Realistic Mode Trigger End | An opposite extremum seen within the minimum duration stays suppressed for good; activating it once the minimum duration ends would act on a stale extremum. |
 | Q7 | trigger.md, Realistic Mode Trigger Begin | Only the newest candidate of a type may activate, so an older extremum detected later is never acted on. |
 | Q8 | metrics.md, Signal Metrics | `trials_to_true` is counted within each direction, so a wait count never spans rows of the other direction. |

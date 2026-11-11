@@ -239,7 +239,7 @@ class Trigger(ProducerConsumerMixin, luigi.Task):
 
     def _should_process_series(self, series_id: str, df: pd.DataFrame) -> bool:
         """The gate pre-filter (trigger.gate.prefilter) on the date-filtered raw frame: False, with one INFO record
-        naming the item, when one item that applies to the series passes on no bar of the read window; True with the
+        naming the item, when one item that applies to the series passes on no row of the read window; True with the
         pre-filter off and for a reference series, which it never skips.
         """
         if not self._gate_prefilter or series_id in self._reference_series:
@@ -249,7 +249,7 @@ class Trigger(ProducerConsumerMixin, luigi.Task):
             return True
         logger.info(
             f"Skipping series {series_id}: gate item {item.column} {item.op} {item.threshold} "
-            f"passes on no bar of the read window"
+            f"passes on no row of the read window"
         )
         return False
 
