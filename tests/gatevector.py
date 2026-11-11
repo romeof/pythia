@@ -7,7 +7,7 @@ i > 0 and row i-1 passes every item, each comparison in the column's dtype) and 
 (no previous row), a NaN fails (row 1 after var12's, row 2 after var15's), and the float32 0.83 of row 3 passes
 >= 0.83, so row 4 is allowed. An item var14 <= 5 on a rank column holding 0 on unranked rows passes there.
 applicable_items drops the items whose exempt_series names the series; blocking_item returns the first item that
-passes on no row, and None when each item passes on some row, though never on one row; begin_allowed on a frame
+passes on no row, and None when each item passes on some row, though never all on the same row; begin_allowed on a frame
 without var12 and var15 raises ValueError with the exact message. GateItem refuses the op ">", the column value12, a
 NaN or infinite threshold and the exempt id 1x2, and accepts var12 exempting "0". A gate on row i itself, a shift that
 wraps the last row onto row 0, or a comparison in float64 (0.83 as float32 is 0.82999998) fails a verdict.
@@ -106,7 +106,7 @@ def prefilter_predicate(frame: pd.DataFrame) -> None:
     rows = {item.column: np.flatnonzero([compared(value, item) for value in frame[item.column].to_numpy()]).tolist()
             for item in separate}
     found = blocking_item(frame, separate)
-    KIT.verdict("blocking_item: items passing on different rows only (none on one row) return None",
+    KIT.verdict("blocking_item: items passing on different rows only (never both on the same row) return None",
                 found is None and rows == {"var12": [5], "var14": [3]}, {"returned": None, "rows": {"var12": [5], "var14": [3]}},
                 {"returned": found, "rows": rows})
 

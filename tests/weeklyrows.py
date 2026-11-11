@@ -53,7 +53,7 @@ Hand-derived:
   both series, 14->20 minus, 20->32 plus, 32->40 minus, 40->56 plus, 56->66 minus (series 0 135.5->113.0,
   113.0->173.0, 173.0->123.0, 123.0->243.0, 243.0->155.5, 6, 12, 8, 16, 10 rows; series 1 170.5->125.5,
   125.5->245.5, 245.5->145.5, 145.5->385.5, 385.5->210.5, 6, 12, 8, 15, 10 rows), end_reason ideal_mode on each end
-  and a plus begin still active at week 66; realistic, each begin one week later: series 0 15->21 minus 131.75->118.0,
+  and a plus begin still active at week 66; realistic, each begin one weekly row later: series 0 15->21 minus 131.75->118.0,
   21->33 plus 118.0->166.75, 33->41 minus 166.75->130.5, 41->57 plus 130.5->234.25, 57->67 minus 234.25->165.5 (6,
   12, 8, 16, 10 rows), series 1 15->21 minus 163.0->135.5, 21->33 plus 135.5->233.0, 33->67 minus 233.0->230.5 (6,
   12, 33 rows), end_reason opposite_trigger on each end and a plus begin still active at week 67; every duration is
