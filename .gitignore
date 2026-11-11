@@ -6,6 +6,9 @@
 *.pyc
 *.swp
 *.swx
+# Generated text output (printouts, reports, verification files); tracked text is .md
+*.txt
+!setup/requirements.txt
 
 #Specific folders
 /data/
@@ -17,7 +20,5 @@ __pycache__/
 .ipynb_checkpoints/
 
 #Specific files
-/src/varsreadout.txt
-/verification_*.txt
 /temp*
 /plans/
