@@ -1,0 +1,114 @@
+VERIFICATION RECORD - row-wording (verifier, round r01)
+=========================================================
+
+VERDICT: PASS
+
+Plan: C:\Users\ziosa\Desktop\work\cld\pythia\plans\20261111_Opus-5-5_row-wording.plan.md (planloop LIGHT).
+Branch row-wording, tip 18a217d (one commit on fa2cc18), worktree C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording.
+Every check below ran in this session against that tip, never against master. python = the master venv interpreter
+with PYTHONUTF8=1; rules scripts with -B. Input data was read in place from the shared data folder (the two raw files
+the workflows name); the tests' scratch folders under <worktree>\data were removed by the suite, and the folder is gone.
+The retired word is called "the retired word" and the old test file "the old test file" in this record.
+
+TEST COMMANDS (command, timeout, duration, result, failing tests)
+-----------------------------------------------------------------
+1. python tests/runall.py (cwd = worktree root; background run, timeout 3,600,000 ms)
+   duration 1162 s; return code 0; last line "SUMMARY 69 PASS, 0 FAIL" (the cwd verdict plus 68 scripts);
+   69 "PASS <script>" lines in the log; failing tests: none.
+2. python -B tests/weeklyrows.py (timeout 550 s)   duration 16 s; rc 0; "SUMMARY 57 PASS, 0 FAIL"; failing: none.
+3. python -B tests/gatemodes.py  (timeout 550 s)   duration 5 s;  rc 0; "SUMMARY 12 PASS, 0 FAIL"; failing: none.
+4. python -B tests/badblocks.py  (timeout 550 s)   duration 1 s;  rc 0; "SUMMARY 3 PASS, 0 FAIL"; failing: none.
+   (badblocks log lines, as written to the console, name dates and row counts only:
+    "PASS dates missing inside the block (2022-01-06, 2022-01-07, 2022-01-10): one block of three bad rows in the report"
+    "PASS calendar-consecutive rows (2022-01-04 to 2022-01-06): one block of three bad rows in the report"
+    "PASS a repeated date (2022-01-04, 2022-01-04, 2022-01-05): one block of three bad rows in the report")
+5. Project check, exactly as planloop runs it: cmd.exe /d /s /c "<python 3.11>" pythia/rules/lint_terminology.py
+   "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src", cwd = workspace root, limit 600 s
+   duration 0.5 s; return code 0.
+   (Run from Git Bash the quoting broke the line - a shell artefact of mine; re-run from PowerShell gave rc 0.)
+6. python -B <rules>\lint_terminology.py --self-test: rc 0, "self-test: all passed (49 banned terms, 16 exempt)", <1 s.
+7. python -B <rules>\lint_terminology.py <worktree>\src: rc 0, "terminology OK: 64 file(s) scanned, 49 banned terms,
+   16 exempt; no hits", <1 s.
+8. python -B <rules>\lint_terminology.py --strict src tests audit workflows: rc 1 as expected (it reports the standing
+   terms): 65 hits across 168 files, the three standing terms at 36, 20 and 9 (the plan's ceilings 36/20/9, equal to master's
+   65); 0 hits of the retired word or its plural.
+9. python -B temp_row-wording\a5check.py <worktree> fa2cc18 HEAD: rc 0, ~6 s (see A5).
+10. python -B temp_row-wording\a8sweep.py <worktree> <rules>: rc 0, ~1 s (see A8).
+11. python -B <rules>\residual.py --self-test: rc 0, "self-test: 41/41 controls pass", <1 s.
+12. python -B <rules>\residual.py <worktree> HEAD: rc 0, "REAL by term: {}", <1 s.
+No test or command timed out; no test failed.
+
+ACCEPTANCE
+----------
+A1 Retired word - PASS. The three git greps of the brief (regex outside data and this record; the old test file's
+   name; a doubled row phrase) print 0, 0 and 0 lines; git ls-files holds 0 paths with the old test file's name.
+A2 Calendar - PASS. Weekday-name grep 0 lines; abbreviation grep 0 lines; "five rows a week" 0 lines. The weekdays?
+   grep lists 12 lines, all stay sites: docs/performance.md:455, src/utils/performance/gradient.py:65,
+   tests/effectivestart.py:6, tests/lookbackrows.py (7 lines: 1, 6, 41, 42, 43, 46, 49), tests/observeddates.py:9,13.
+A3 Aggregation rules - PASS. tests/weeklyrows.py: 0 hits for D1-D5 labels or "upstream". Its module docstring (lines
+   34-40) states, without source: membership (a daily row belongs to the weekly row of the Saturday on or after it),
+   counting (uncounted when var5 is 0 and var0 = var1 = var2 = var3), used rows (the counted ones, else all), the
+   column rules (var0 first, var1 minimum, var2 maximum, var3/var4/var12/var15 last, var5 sum).
+A4 Fixture name - PASS. audit/synthetic.py: 0 hits of the old parameter name (daily_frame's parameter is var5).
+A5 Computation unchanged - PASS. a5check over git diff --name-status -M fa2cc18..HEAD (35 M, 1 R081 = 36 paths):
+   8 src files keep line counts and ast.dump without docstrings; 2 workflows load to equal objects; 25 tests/audit
+   files: master's AST renamed by the identifier map equals the tip's node for node (26 reworded str constants,
+   each base text holding a retired word, each tip text keeping every number and YYYY-MM-DD); the map is injective in
+   every symtable scope; 30 audit scripts compile in memory; README.md not compared (A1 covers it).
+   Output tail: "compared {'not compared': 1, 'renamed ast': 25, 'src': 8, 'yaml': 2}; failing files 0".
+   Identifier map: weekly oracle (6 names: weekly_rows, weekly_row_verdicts, weekly_row_levels, ANOMALY_WEEKLY_ROWS,
+   weekly, REFERENCE_METRICS_R6), gatemodes (BLOCK_ROWS, previous_row, row), synthetic (var5).
+A6 Tests - PASS (see TEST COMMANDS 1-4): runall rc 0, SUMMARY 69 PASS, 0 FAIL.
+A7 Lint - PASS (see TEST COMMANDS 6-8): self-test rc 0; default run on src 0 hits; strict run 0 hits of the retired
+   word, standing terms 36/20/9 = at or below the ceilings.
+A8 Sweep - PASS. exp20sweeps' scanner extracted with ast and run with a stub CTX over the edited rules: "control
+   verdicts: 25/25 pass; failing: 0", "scope files: 179; reported hits: 0 in 0 files". residual.py --self-test 41/41
+   (it includes the 3 new controls: two REAL, one excluded with the reason for the quoted cld section title).
+A9 pythia-dev - PASS. git -C pythia diff --stat -- rules: 2 files (rules/atp_terminology.md 3 lines,
+   rules/terminology_data.json 23 lines). HEAD is still 94444e2; git log 94444e2..HEAD is empty: the run added no
+   commit. atp_terminology.md: the retired word and its plural, with "(-> row)", sit in ## Forbidden Terms before the
+   lifecycle-verb item; one "### Not renamed" bullet names the quoted cld section title. terminology_data.json: 1
+   exclusion, 3 controls and 3 domain_terms controls appended, ASCII-only (section sign stored as \u00a7).
+   plans/CONTEXT_neutral-names.md: 231 lines (unchanged count); lines 9, 13 and 220 each carry the reversal
+   ("Reversed by the operator on 2026-11-10 ... retired by row-wording" / "Reversed by the operator (2026-11-10): in,
+   retired as row by row-wording").
+Integrity - PASS. residual.py <worktree> HEAD: rc 0, REAL by term {} (class totals: 125 display keys, 26
+   ordinary-language, 36 synthetic-fixture, 41 file/figure, 40 metric residue, 15 process names, 30
+   third-party API; all excluded or non-REAL). git diff --numstat -M fa2cc18..HEAD: 36 paths, 215 insertions, 205
+   deletions; the largest change is the renamed oracle (102+/94-, shown as R081): no whole-file rewrite.
+   git diff --check fa2cc18..HEAD: clean (rc 0). git ls-files --eol: the only non-lf paths are empty package
+   initializer files (i/none), none of them touched.
+
+WHAT THE CODE NOW SAYS (sample from the tip)
+--------------------------------------------
+tests/weeklyrows.py module docstring, calendar: "weeks k = 0..77, Saturday S_k = 2020-01-11 + 7k days ... daily rows on
+the five dates S_k - 5 to S_k - 1, row index d = 0..389"; anomalies: "(i) 2020-06-29, row 1 of week 25, is an
+uncounted row ... (ii) 2020-06-26, row 5 of week 24, is a counted row with var5 0" - dates and row numbers, no
+weekday names. Weekly rows: "a daily row belongs to the weekly row of the Saturday on or after it; a daily row is
+counted unless var5 is 0 and var0 = var1 = var2 = var3, and a weekly row uses its counted daily rows, or all its
+daily rows when none counts". The test's console verdicts (57) read e.g. "ideal: series 1's per-trigger duration
+(rows) and variation (%)" and "the gate reads the previous weekly row".
+
+NOT DONE / REDUCED / UNVERIFIED
+-------------------------------
+- Audit scripts (30 files, 11 edited): compiled in memory and AST-compared only, not executed; the audit harness gate
+  was not run (a point the TASK names).
+- Stage 2 (stored daily and weekly workloads against fa2cc18, 0 HDF5 differences), the merge, the record's removal,
+  the pythia-dev commit and every push belong to the assistant and the operator; not run here.
+- No verdict-count comparison against master's suite (it would write into the master tree); A5's AST identity and A6
+  stand in.
+- Until the merge, master still holds the retired word: strict lint and residual.py report it, and export.py refuses
+  master.
+- I relied on the implementer's helper scripts (a5check, a8sweep, recordcheck) for A5, A8 and the record pre-check;
+  I read their headers and the control run recorded by the implementer (with the map emptied A5 fails 3 files), and
+  cross-checked A1-A4, A7, A9 and the integrity items with direct git and lint commands.
+- Base note carried from the implementer's record: the branch was rebased onto fa2cc18; on the pre-rebase base the
+  suite had 4 failures (cddd732's own dev-profile flags), none on the tip. Master has since moved to 792829d; the
+  row-wording branch does not contain it, so merging is not a fast-forward (merge-base fa2cc18; master's later
+  commits touch none of this run's files).
+
+No controversial decision arose; nothing was escalated.
+
+
+== PROJECT CHECKS (run by planloop after the verdict, from C:\Users\ziosa\Desktop\work\cld; timeout 600 s each) ==
+PASS  "C:\Users\ziosa\AppData\Local\Programs\Python\Python311\python.exe" pythia/rules/lint_terminology.py "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src"  (0.7 s)
