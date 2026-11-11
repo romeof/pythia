@@ -67,11 +67,12 @@ def _encoded_index(index: pd.DatetimeIndex, encoding: str) -> np.ndarray:
     return index.values.astype(f"datetime64[{unit}]").astype("int64")
 
 
-def daily_frame(values: np.ndarray, start: str, *, capacity: float = 1.0e6) -> pd.DataFrame:
-    """Weekday frame with var0..var5 built from one value path (var5 constant capacity)."""
+def daily_frame(values: np.ndarray, start: str, *, var5: float = 1.0e6) -> pd.DataFrame:
+    """Frame with var0..var5 built from one value path (var5 constant), dated from start with two consecutive
+    dates in every seven without a row."""
     index = pd.bdate_range(start=start, periods=len(values))
     frame = pd.DataFrame({column: values.astype("float32") for column in VALUE_COLUMNS[:5]}, index=index)
     frame["var1"] = (values * 0.99).astype("float32")
     frame["var2"] = (values * 1.01).astype("float32")
-    frame["var5"] = np.full(len(values), capacity).astype("int32")
+    frame["var5"] = np.full(len(values), var5).astype("int32")
     return frame[list(VALUE_COLUMNS)]

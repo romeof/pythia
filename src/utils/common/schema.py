@@ -91,7 +91,7 @@ class EndConfig(ConfigModel):
 class ReplayConfig(ConfigModel):
     # Replay mode: "ideal" uses full series (future rows visible), "realistic" uses incremental windows (no future rows), "dual" runs both
     mode: Literal[REPLAY_IDEAL, REPLAY_REALISTIC, REPLAY_DUAL]
-    # Burn-in period: number of bars (rows) to wait before starting analysis
+    # Burn-in period: number of rows to wait before starting analysis
     lookback_window: int = Field(ge=1)
     # Window type for realistic mode
     window_type: Literal[WINDOW_EXPANDING, WINDOW_ROLLING] = Field(default=WINDOW_EXPANDING)
@@ -148,8 +148,8 @@ class ValidityConfig(ConfigModel):
 
 
 class GateItem(ConfigModel):
-    """One item of trigger.gate.items: a begin at bar i is allowed only when bar i-1 passes every item that applies
-    to the series (NaN fails; a first bar fails); an item applies to every series its exempt_series does not name."""
+    """One item of trigger.gate.items: a begin at row i is allowed only when row i-1 passes every item that applies
+    to the series (NaN fails; a first row fails); an item applies to every series its exempt_series does not name."""
 
     # A positional input column (var0, var12, ...)
     column: str = Field(pattern=VAR_COLUMN_PATTERN)
@@ -160,15 +160,15 @@ class GateItem(ConfigModel):
 
 
 class GateConfig(ConfigModel):
-    """The gate on the previous bar (trigger.gate): its items and the pre-filter switch."""
+    """The gate on the previous row (trigger.gate): its items and the pre-filter switch."""
 
     items: List[GateItem] = Field(default_factory=list)
-    # skip a series one applicable item passes on no bar of the read window; never a reference series
+    # skip a series one applicable item passes on no row of the read window; never a reference series
     prefilter: bool = Field(default=False)
 
 
 class TriggerConfig(ConfigModel):
-    # The gate on the previous bar: the items a begin's previous bar must pass, and the pre-filter
+    # The gate on the previous row: the items a begin's previous row must pass, and the pre-filter
     gate: GateConfig = Field(default_factory=GateConfig)
     # Minimum series length required for processing
     min_length: int = Field(ge=1)

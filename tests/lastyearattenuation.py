@@ -1,6 +1,6 @@
 """Regression for the last-year attenuation applied to the curve (Q17).
 
-(1) build_actual_variation_pair on two synthetic plus signals over the weekdays of 2020
+(1) build_actual_variation_pair on two synthetic plus signals over the observed dates of 2020
 and 2021 (multiplicative_fixed, weight 0.5, yearly_attenuation_fraction 0.25, attenuation_month 1): one increases
 20% in 2020, the other 40% in 2021, so the curve's last-year increase is G = 0.5 * 0.40 = 0.20.
 Expected: the attenuated curve's item before the last holds the value without the last-year

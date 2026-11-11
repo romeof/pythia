@@ -7,11 +7,11 @@ read:
   skip_series: []
 
 trigger:
-  gate:                 # a begin at bar i needs bar i-1 to pass every item that applies to the series; a NaN fails
+  gate:                 # a begin at row i needs row i-1 to pass every item that applies to the series; a NaN fails
     items:
       - {column: var12, op: ">=", threshold: 0.83, exempt_series: ["0"]}   # every series but the reference series 0
       - {column: var15, op: ">=", threshold: 0.73}                         # every series
-    prefilter: true     # skip a series one applicable item passes on no bar of the read window (never a reference series)
+    prefilter: true     # skip a series one applicable item passes on no row of the read window (never a reference series)
   min_length: 5
   consecutive_rows_with_bad_preprocessed_data: 3
   trigger_value: "following_row" #"detection_row"
@@ -27,7 +27,7 @@ trigger:
     width: 1
   replay:
     mode: "dual" #"ideal" #"realistic"
-    lookback_window: 50 # Burn-in period: wait this many bars (rows) before starting analysis
+    lookback_window: 50 # Burn-in period: wait this many rows before starting analysis
     window_type: "rolling" # "expanding" = use full history, "rolling" = use fixed window of lookback_window length
     min_duration_periods: 2 # Minimum duration: no end allowed before this
 

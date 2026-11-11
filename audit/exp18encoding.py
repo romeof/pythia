@@ -4,7 +4,7 @@
    Preprocess.process_series in two children: an ANSI child (-X utf8=0, PYTHONUTF8 removed,
    its code page recorded) and a UTF-8 child. Intent: identical report and frame in both.
 2. pipeline --task trigger, without a gate (pipelinekit.GATE_OFF), on a copy of the six input
-   series (written by synthetic.py) with var5 = 0 on three calendar-consecutive weekdays of
+   series (written by synthetic.py) with var5 = 0 on three calendar-consecutive dates of
    series 0, once per environment. Intent: six series in both trigger outputs.
 
 Structure:
@@ -118,7 +118,7 @@ def _encodable(record: str) -> bool:
 
 
 def synthetic_frame() -> pd.DataFrame:
-    """A daily frame with var5 = 0 on three calendar-consecutive weekdays."""
+    """A daily frame with var5 = 0 on three calendar-consecutive dates."""
     frame = synthetic.daily_frame(100.0 + np.sin(np.arange(SYNTHETIC_SIZE, dtype=float)), SYNTHETIC_START)
     frame.loc[pd.to_datetime(list(BAD_DATES)), VAR5] = 0
     return frame

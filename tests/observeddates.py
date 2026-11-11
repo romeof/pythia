@@ -11,7 +11,7 @@ no series observes, is absent. (c) The replot of (a)'s ideal performance file in
 labels below the bottom axis are 2020-01-07 and 2020-02-02, a Sunday. (d) A copy of that file without
 /total_variation replots with the same two labels, now from the reference curves (series 0 is the shipped
 reference). A weekday calendar fails all four: it drops (a)'s Saturday and Sunday dates, its last label falls
-on Friday 2020-01-31, and it adds 2020-01-01 to (b).
+on 2020-01-31, and it adds 2020-01-01 to (b).
 
 Structure:
 1. main

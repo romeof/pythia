@@ -82,7 +82,7 @@ class BaseDetection(RealisticModeMixin, IdealModeMixin, ABC):
             return None
 
         df = self._add_trigger_value_column(df)
-        # The gate on the previous bar, once per series: both modes read allowed[i] at a begin's row i
+        # The gate on the previous row, once per series: both modes read allowed[i] at a begin's row i
         self._begin_allowed = begin_allowed(series_id, df, applicable_items(series_id, self._gate_items))
         # Initialize end_reason column early to ensure it exists with correct dtype
         if END_REASON not in df.columns:

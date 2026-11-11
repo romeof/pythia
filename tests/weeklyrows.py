@@ -1,4 +1,4 @@
-"""Weekly-bar oracle: the shipped weekly workflow and a synthetic weekly input with hand-derived values, both modes.
+"""Weekly-row oracle: the shipped weekly workflow and a synthetic weekly input with hand-derived values, both modes.
 
 Two kinds of expectation, never mixed: Part A's are measured figures, a regression pin; Part B's are constants
 derived by hand from the fixture below, and no value read back from an output serves as one.
@@ -16,49 +16,52 @@ within 5e-4, half a unit of their third decimal, and fall_dur 16, in both modes.
 re-baseline.
 
 Part B, a synthetic input. Calendar: weeks k = 0..77, Saturday S_k = 2020-01-11 + 7k days (S_9 2020-03-14, S_45
-2020-11-21, S_50 2020-12-26, S_51 2021-01-02, S_73 2021-06-05, S_77 2021-07-03); daily rows Monday S_k - 5 to
-Friday S_k - 1, row index d = 0..389. Knots of series 0: v_-1 = 97.5, v_k = v_(k-1) + s_k with s_k = 2.5 (k <= 14),
+2020-11-21, S_50 2020-12-26, S_51 2021-01-02, S_73 2021-06-05, S_77 2021-07-03); daily rows on the five dates S_k - 5
+to S_k - 1, row index d = 0..389. Knots of series 0: v_-1 = 97.5, v_k = v_(k-1) + s_k with s_k = 2.5 (k <= 14),
 -3.75 (15-20), 5 (21-32), -6.25 (33-40), 7.5 (41-56), -8.75 (57-66), 10 (67-77): maxima v_14 = 135, v_32 = 172.5,
 v_56 = 242.5, minima v_20 = 112.5, v_40 = 122.5, v_66 = 155; v_9 = 122.5, v_77 = 265. Row j = 1..5 of week k: var3 =
-v_(k-1) + j s_k / 5 (Friday on the knot), series 1 = 2 x series 0 - 100; var0 = the previous row's var3 of the same
+v_(k-1) + j s_k / 5 (row 5 on the knot), series 1 = 2 x series 0 - 100; var0 = the previous row's var3 of the same
 series + 0.5, on its own rows (first row 98.0 / 95.5); var1 = min(var0, var3) - 1, var2 = max(var0, var3) + 1,
 var4 = var3, var5 = 1000 + d, var12 = var15 = 0.9. Every increment is a multiple of 0.25, so float32 keeps every
-value. Anomalies, in both series unless named: (i) Monday 2020-06-29 (week 25) is an uncounted row, var5 0 and var0 =
-var1 = var2 = var3 = var4 = Friday 2020-06-26's var3; (ii) Friday 2020-06-26 (week 24) is a counted row with var5 0;
-(iii) series 1 lacks the five rows of week 45, so its Monday 2020-11-23 has var0 205.0 + 0.5; (iv) the rows of week 40
-hold var12 0.5. The slope magnitudes grow leg by leg, so the 10-bar window ending at e + 1 reports each extremum e
-(width at half prominence 0.5 + s_r / (2 s_l) > 1), and no prominence filters: an ideal one is a full leg of at least
-22.5 against 5 % of the range 165, a realistic one the single right step, above 5 % of the window's range.
+value. Anomalies, in both series unless named: (i) 2020-06-29, row 1 of week 25, is an uncounted row, var5 0 and
+var0 = var1 = var2 = var3 = var4 = the var3 of 2020-06-26; (ii) 2020-06-26, row 5 of week 24, is a counted row with
+var5 0; (iii) series 1 lacks the five rows of week 45, so its row on 2020-11-23 has var0 205.0 + 0.5; (iv) the rows of
+week 40 hold var12 0.5. The slope magnitudes grow leg by leg, so the window of 10 weekly rows ending at e + 1 reports
+each extremum e (width at half prominence 0.5 + s_r / (2 s_l) > 1), and no prominence filters: an ideal one is a full
+leg of at least 22.5 against 5 % of the range 165, a realistic one the single right step, above 5 % of the window's
+range.
 
-Bars (weekly_bars, the upstream rules D1-D5 for the eight columns read): a row belongs to the bar of the Saturday on
-or after it; a row is counted unless var5 is 0 and var0 = var1 = var2 = var3 (D3), and a bar uses its counted rows,
-or all its rows when none counts; var0 is the first used row's, var1 the minimum, var2 the maximum, var3, var4, var12
-and var15 the last used row's, var5 the sum. Series 0 gives 78 bars S_0..S_77, series 1 77 (no S_45); the var5 sums
-keep the daily totals and stay within 16,777,216. Bar 24 holds Friday 2020-06-26's var2, var3, var4 (133.5, 132.5,
-132.5; series 1 166, 165, 165), since that zero-var5 row counts (without it Thursday's 132.5, 131.5, 131.5), and the
-Monday-Thursday var5 sum 4486; bar 25 holds Tuesday's var0 (133.0; series 1 165.5), since the uncounted Monday is
-skipped (it would give 132.5 and 165.0), the Tuesday-Friday sum 4510 and var3 on the knot 137.5 (175). Every bar's
-var3 is its knot.
+Weekly rows (weekly_rows, for the eight columns read): a daily row belongs to the weekly row of the Saturday on or
+after it; a daily row is counted unless var5 is 0 and var0 = var1 = var2 = var3, and a weekly row uses its counted
+daily rows, or all its daily rows when none counts; var0 is the first used daily row's, var1 the minimum, var2 the
+maximum, var3, var4, var12 and var15 the last used daily row's, var5 the sum. Series 0 gives 78 weekly rows
+S_0..S_77, series 1 77 (no S_45); the var5 sums keep the daily totals and stay within 16,777,216. Weekly row 24 holds
+the var2, var3, var4 of 2020-06-26 (133.5, 132.5, 132.5; series 1 166, 165, 165), since that zero-var5 daily row
+counts (without it those of 2020-06-25, 132.5, 131.5, 131.5), and the var5 sum 4486 of 2020-06-22 to 2020-06-25;
+weekly row 25 holds the var0 of 2020-06-30 (133.0; series 1 165.5), since the uncounted 2020-06-29 is skipped (it
+would give 132.5 and 165.0), the sum 4510 of 2020-06-30 to 2020-07-03 and var3 on the knot 137.5 (175). Every weekly
+row's var3 is its knot.
 
 Run: one dual --task all under the prod profile on a copy with the weekly overrides and read.ini_date 2020-01-11,
 read.end_date 2021-07-03; as shipped: following_row, weight 0.2, multiplicative_total_before_active_signals, attenuation 0.25 in
 month 6, period_back 5, corr_threshold 0.6, the gate var12 >= 0.83 exempting series 0 and var15 >= 0.73.
 Hand-derived:
-- tv(k), the recorded trigger_value, is the next bar's var0 = var3(k) + 0.5 (v_k + 0.5 for series 0, 2 v_k - 99.5
-  for series 1, across the gap week and the uncounted Monday too), the last bar's var3 on the last bar; it differs
-  from var3(k) and var0(k), so a same-row reading of either fails;
+- tv(k), the recorded trigger_value, is the next weekly row's var0 = var3(k) + 0.5 (v_k + 0.5 for series 0,
+  2 v_k - 99.5 for series 1, across the gap week and the uncounted daily row too), the last weekly row's var3 on the
+  last weekly row; it differs from var3(k) and var0(k), so a same-row reading of either fails;
 - triggers (weeks begin -> end, direction, tv values, all true; durations in rows of the series' own index): ideal,
   both series, 14->20 minus, 20->32 plus, 32->40 minus, 40->56 plus, 56->66 minus (series 0 135.5->113.0,
   113.0->173.0, 173.0->123.0, 123.0->243.0, 243.0->155.5, 6, 12, 8, 16, 10 rows; series 1 170.5->125.5,
   125.5->245.5, 245.5->145.5, 145.5->385.5, 385.5->210.5, 6, 12, 8, 15, 10 rows), end_reason ideal_mode on each end
-  and a plus begin still active at week 66; realistic, each begin one bar later: series 0 15->21 minus 131.75->118.0,
+  and a plus begin still active at week 66; realistic, each begin one week later: series 0 15->21 minus 131.75->118.0,
   21->33 plus 118.0->166.75, 33->41 minus 166.75->130.5, 41->57 plus 130.5->234.25, 57->67 minus 234.25->165.5 (6,
   12, 8, 16, 10 rows), series 1 15->21 minus 163.0->135.5, 21->33 plus 135.5->233.0, 33->67 minus 233.0->230.5 (6,
   12, 33 rows), end_reason opposite_trigger on each end and a plus begin still active at week 67; every duration is
   below 100, so no max_duration;
-- the gate reads the previous bar: bar 40 fails var12 for series 1 (series 0 is exempt), so ideal keeps its begin on
-  S_40 (bar 39 passes) and realistic has none on S_41, where series 0 begins; the blocked candidate is suppressed, the
-  week-56 minus candidate repeats the active trigger's type, and the week-66 plus candidate ends it on S_67;
+- the gate reads the previous weekly row: weekly row 40 fails var12 for series 1 (series 0 is exempt), so ideal keeps
+  its begin on S_40 (weekly row 39 passes) and realistic has none on S_41, where series 0 begins; the blocked
+  candidate is suppressed, the week-56 minus candidate repeats the active trigger's type, and the week-66 plus
+  candidate ends it on S_67;
 - groups: the two series begin together (every ideal begin, the realistic S_15, S_21 and S_33) and correlate 1 as
   affine copies, series 1 the steeper; ideal 5 groups of both series, signal series 1; realistic 15->21 and 21->33
   likewise, then series 1's 33->67 (signal) with series 0's 33->41, 41->57 and 57->67 (each begins inside [S_33,
@@ -75,10 +78,10 @@ Hand-derived:
 - attenuations: A = 0.25 x (pure(S_50) - pure(S_9)) (ideal 0.163405, realistic 0.030184) from S_73, the first date the
   attenuated curve differs, and the terminal T = 0.25 x max(0, pure(S_77) - A - pure(S_51)) (0.045095, 0.002144) on S_77;
 - reference: level(S) = v3(S) / 122.5, v3(S) the var3 of the last counted row on or before S in series 0's daily rows
-  (each the knot; 122.5 is Friday 2020-03-13's); acr = variation_pct((265 / 122.5) ^ (1 / n_years), 1) = 80.776; std
+  (each the knot; 122.5 is 2020-03-13's); acr = variation_pct((265 / 122.5) ^ (1 / n_years), 1) = 80.776; std
   = the ddof-1 standard deviation of variation_pct(v_k, v_(k-1)) over k = 10..77 x sqrt(m) = 28.833478; max_fall =
   -variation_pct(155, 242.5) = 36.082474; terminal attenuation 0.25 x (265 / 122.5 - 1) = 0.290816;
-- daily side: the max_fall of series 0's daily levels from Friday 2020-03-13 to Friday 2021-07-02 is 36.082474 (linear
+- daily side: the max_fall of series 0's daily levels from 2020-03-13 to 2021-07-02 is 36.082474 (linear
   between the knots), and the weekly max_fall does not exceed it; the span of those levels, 476 days, gives the curve's
   n_years;
 - breakdown (Signals row): ideal 5 (plus 2, minus 3), realistic 3 (plus 1, minus 2), all true.
@@ -86,7 +89,7 @@ Hand-derived:
 Structure:
 1. main
 2. Part A: the weekly workflow and the R6 run
-3. Part B: the synthetic bars and the mode verdicts
+3. Part B: the synthetic weekly rows and the mode verdicts
 4. The R6 verdicts, builders and readers, shared with the record drivers
 5. Helpers
 """
@@ -124,7 +127,7 @@ DAY_WORD = re.compile(r"\bdays?\b")
 # the reference metrics within R6_ATOL, half a unit of their third decimal
 R6_SIGNALS = {"ideal": 32, "realistic": 57}
 R6_CURVE = {"dates": 131, "first": "2019-03-09", "last": "2021-09-04", "saturdays": True}
-R6_METRICS = {"acr": 38.942, "std": 22.055, "max_fall": 27.250, "fall_dur": 16.0}
+REFERENCE_METRICS_R6 = {"acr": 38.942, "std": 22.055, "max_fall": 27.250, "fall_dur": 16.0}
 R6_ATOL = 5e-4
 REFERENCE_ID = "0"  # the shipped read.reference_series, which no weekly copy overrides
 FLOAT32_RTOL = 1e-6  # a float32-persisted value against its float64 expectation
@@ -134,8 +137,8 @@ DATE_FORMAT = "%Y-%m-%d"
 # Part B: the calendar, the knots of series 0 and the affine map of each series, the anomalies
 SYNTHETIC_INPUT = Path("input") / "2026_01_01" / "0" / "raw" / "0.h5"
 SATURDAYS = pd.date_range("2020-01-11", periods=78, freq="7D")  # S_0..S_77
-ROWS_PER_WEEK = 5  # Monday to Friday
-EPOCH = pd.Timestamp("1970-01-01")  # a Thursday: day 2 is a Saturday
+ROWS_PER_WEEK = 5  # S_k - 5 to S_k - 1
+EPOCH = pd.Timestamp("1970-01-01")  # day 2, 1970-01-03, is a Saturday
 EPOCH_SATURDAY = 2
 LEG_ENDS = (14, 20, 32, 40, 56, 66, 77)  # the last week of each leg
 LEG_SLOPES = (2.5, -3.75, 5.0, -6.25, 7.5, -8.75, 10.0)  # s_k per week of the leg
@@ -148,16 +151,17 @@ BAND = 1.0  # var1 and var2 lie BAND below min(var0, var3) and above max(var0, v
 VAR5_BASE = 1000.0  # var5 = VAR5_BASE + d
 GATE_PASS, GATE_FAIL = 0.9, 0.5
 GATE_WEEK = 40  # var12 GATE_FAIL in both series
-ZERO_VAR5_ROW = 24 * ROWS_PER_WEEK + 4  # Friday 2020-06-26, counted with var5 0
-UNCOUNTED_ROW = 25 * ROWS_PER_WEEK  # Monday 2020-06-29, flat at the Friday before it with var5 0
+ZERO_VAR5_ROW = 24 * ROWS_PER_WEEK + 4  # 2020-06-26, row 5 of week 24, counted with var5 0
+UNCOUNTED_ROW = 25 * ROWS_PER_WEEK  # 2020-06-29, row 1 of week 25, flat at the row before it with var5 0
 GAP_SERIES, GAP_WEEK = "1", 45
 FLOAT32_SUM_BOUND = 2 ** 24  # the largest integer float32 holds with every integer below it
-# The anomalies' bars per series: bar 24 holds the zero-var5 Friday's var2-var4 and the Monday-Thursday var5 sum;
-# bar 25 holds Tuesday's var0 (the uncounted Monday skipped), the Tuesday-Friday sum and var3 on the knot
-ANOMALY_BARS = {"0": {24: {"var2": 133.5, "var3": 132.5, "var4": 132.5, "var5": 4486.0},
-                      25: {"var0": 133.0, "var3": 137.5, "var5": 4510.0}},
-                "1": {24: {"var2": 166.0, "var3": 165.0, "var4": 165.0, "var5": 4486.0},
-                      25: {"var0": 165.5, "var3": 175.0, "var5": 4510.0}}}
+# The anomalies' weekly rows per series: weekly row 24 holds the var2-var4 of its zero-var5 row 5 and the var5 sum
+# of rows 1-4; weekly row 25 holds the var0 of row 2 (the uncounted row 1 skipped), the sum of rows 2-5 and var3 on
+# the knot
+ANOMALY_WEEKLY_ROWS = {"0": {24: {"var2": 133.5, "var3": 132.5, "var4": 132.5, "var5": 4486.0},
+                             25: {"var0": 133.0, "var3": 137.5, "var5": 4510.0}},
+                       "1": {24: {"var2": 166.0, "var3": 165.0, "var4": 165.0, "var5": 4486.0},
+                             25: {"var0": 165.5, "var3": 175.0, "var5": 4510.0}}}
 
 # Part B expectations: per mode the end reason, the week of the plus begin still active at the end and per series its
 # triggers (begin week, end week, plus, duration in rows of the series' own index)
@@ -181,7 +185,7 @@ GROUPS = {
 }
 NUM_SERIES = 2
 CURVE_FIRST_WEEK = 9  # index[lookback_window - 1]
-SPAN_DAYS = 476  # S_9 to S_77, and Friday 2020-03-13 to Friday 2021-07-02 on the daily side
+SPAN_DAYS = 476  # S_9 to S_77, and 2020-03-13 to 2021-07-02 on the daily side
 N_YEARS = SPAN_DAYS / 365.25
 ANNUAL_PERIODS = 365.25 / 7  # m: 68 intervals over N_YEARS
 WEIGHT = 0.2
@@ -225,7 +229,7 @@ def workflow_verdicts(texts: dict[str, str], shipped: dict, weekly: dict) -> Non
     KIT.verdict(f"{WEEKLY_FILE} differs from {testkit.STRATEGY_FILE} in exactly the six weekly leaves",
                 differing == WEEKLY_LEAVES, WEEKLY_LEAVES, differing)
     words = {name: DAY_WORD.findall(text) for name, text in texts.items()}
-    KIT.verdict("neither workflow's text holds the word day or days (the comments count bars)",
+    KIT.verdict("neither workflow's text holds the word day or days (the comments count rows)",
                 not any(words.values()), {name: [] for name in texts}, words)
 
 
@@ -252,19 +256,19 @@ def weekly_run(overrides: dict) -> None:
 
 
 # =============================================================================
-# PART B: THE SYNTHETIC BARS AND THE MODE VERDICTS
+# PART B: THE SYNTHETIC WEEKLY ROWS AND THE MODE VERDICTS
 # =============================================================================
 
 
 def synthetic_run(overrides: dict) -> None:
-    """The synthetic daily rows and their bars, the bars' verdicts, one dual --task all on a copy with the weekly
-    overrides that reads the bars, then both modes' verdicts."""
+    """The synthetic daily rows and their weekly rows, the weekly rows' verdicts, one dual --task all on a copy with
+    the weekly overrides that reads the weekly rows, then both modes' verdicts."""
     daily = {series_id: daily_frame(series_id) for series_id in AFFINE}
-    bars = {series_id: weekly_bars(frame) for series_id, frame in daily.items()}
-    bar_verdicts(daily, bars)
+    weekly = {series_id: weekly_rows(frame) for series_id, frame in daily.items()}
+    weekly_row_verdicts(daily, weekly)
     with testkit.scratch(KIT) as folder:
         raw = folder / SYNTHETIC_INPUT
-        testkit.write_raw_input(raw, bars)
+        testkit.write_raw_input(raw, weekly)
         read = {"read.raw_data": f"./{Path(os.path.relpath(raw, Path.cwd())).as_posix()}",
                 "read.ini_date": SATURDAYS[0].strftime(DATE_FORMAT), "read.end_date": SATURDAYS[-1].strftime(DATE_FORMAT)}
         config_file = testkit.config_copy(KIT, folder, strategy={**overrides, **read})
@@ -276,28 +280,30 @@ def synthetic_run(overrides: dict) -> None:
                                  for task in testkit.TASKS}, daily["0"])
 
 
-def bar_verdicts(daily: dict[str, pd.DataFrame], bars: dict[str, pd.DataFrame]) -> None:
-    """Before the run: the Saturday stamps, the var5 sums and their float32 bound, the anomalies' bars, every var3 on
-    its knot."""
-    for series_id, frame in bars.items():
-        knots = bar_levels(series_id)
-        expected = {"bars": len(knots), "saturdays": True, "as hand-derived": True}
-        stamps = {"bars": len(frame), "saturdays": bool((frame.index.dayofweek == SATURDAY).all()),
+def weekly_row_verdicts(daily: dict[str, pd.DataFrame], weekly: dict[str, pd.DataFrame]) -> None:
+    """Before the run: the Saturday stamps, the var5 sums and their float32 bound, the anomalies' weekly rows, every
+    var3 on its knot."""
+    for series_id, frame in weekly.items():
+        knots = weekly_row_levels(series_id)
+        expected = {"weekly rows": len(knots), "saturdays": True, "as hand-derived": True}
+        stamps = {"weekly rows": len(frame), "saturdays": bool((frame.index.dayofweek == SATURDAY).all()),
                   "as hand-derived": list(frame.index) == list(knots.index)}
-        KIT.verdict(f"series {series_id}: {len(knots)} bars, each stamped on its Saturday", stamps == expected, expected,
-                    stamps)
+        KIT.verdict(f"series {series_id}: {len(knots)} weekly rows, each stamped on its Saturday", stamps == expected,
+                    expected, stamps)
         sums = {"daily": float(daily[series_id]["var5"].sum()), "weekly": float(frame["var5"].astype(float).sum()),
-                "largest bar": float(frame["var5"].max())}
-        KIT.verdict(f"series {series_id}: the bars' var5 keeps the daily total, every bar within {FLOAT32_SUM_BOUND}",
-                    sums["weekly"] == sums["daily"] and sums["largest bar"] <= FLOAT32_SUM_BOUND,
-                    {"weekly": sums["daily"], "largest bar": f"<= {FLOAT32_SUM_BOUND}"}, sums)
+                "largest weekly row": float(frame["var5"].max())}
+        KIT.verdict(f"series {series_id}: the weekly rows' var5 keeps the daily total, every weekly row within "
+                    f"{FLOAT32_SUM_BOUND}",
+                    sums["weekly"] == sums["daily"] and sums["largest weekly row"] <= FLOAT32_SUM_BOUND,
+                    {"weekly": sums["daily"], "largest weekly row": f"<= {FLOAT32_SUM_BOUND}"}, sums)
         found = {week: {column: float(frame.at[SATURDAYS[week], column]) for column in columns}
-                 for week, columns in ANOMALY_BARS[series_id].items()}
-        KIT.verdict(f"series {series_id}: bar 24 holds the zero-var5 Friday's var2-var4 (that row counts), bar 25 "
-                    "Tuesday's var0 (the uncounted Monday skipped)", found == ANOMALY_BARS[series_id],
-                    ANOMALY_BARS[series_id], found)
+                 for week, columns in ANOMALY_WEEKLY_ROWS[series_id].items()}
+        KIT.verdict(f"series {series_id}: weekly row 24 holds the var2-var4 of its zero-var5 row 5 (that row counts), "
+                    "weekly row 25 the var0 of row 2 (the uncounted row 1 skipped)",
+                    found == ANOMALY_WEEKLY_ROWS[series_id], ANOMALY_WEEKLY_ROWS[series_id], found)
         found_knots = frame["var3"].to_numpy(dtype=float)
-        KIT.verdict(f"series {series_id}: every bar's var3 is its knot", np.array_equal(found_knots, knots.to_numpy()),
+        KIT.verdict(f"series {series_id}: every weekly row's var3 is its knot",
+                    np.array_equal(found_knots, knots.to_numpy()),
                     knots.to_numpy()[[0, 24, 25, -1]].tolist(), found_knots[[0, 24, 25, -1]].tolist())
 
 
@@ -313,7 +319,8 @@ def mode_verdicts(mode: str, stores: dict[str, dict[str, pd.DataFrame]], daily: 
     begins = {series_id: int(frame["trigger_plus_begin"].at[SATURDAYS[week]]) for series_id, frame in frames.items()}
     expected = {"0": 1, "1": int(stands)}
     KIT.verdict(f"{mode}: series 1's plus begin on S_{week} {'stands' if stands else 'is blocked'}, since the gate "
-                f"reads bar {week - 1}, which {'passes' if stands else 'fails var12'}; series 0, exempt, begins there",
+                f"reads weekly row {week - 1}, which {'passes' if stands else 'fails var12'}; series 0, exempt, "
+                "begins there",
                 begins == expected, expected, begins)
     group_verdicts(mode, signal["/signals"])
     signal_metric_verdicts(mode, performance)
@@ -332,8 +339,8 @@ def series_verdicts(series_id: str, series: pd.DataFrame, mode: str, triggers: p
     found = series["trigger_value"].to_numpy(dtype=float)
     same_row = {column: bool(np.any(expected_values.to_numpy()[:-1] == series[column].to_numpy(dtype=float)[:-1]))
                 for column in ("var3", "var0")}
-    KIT.verdict(f"{mode} series {series_id}: trigger_value is the next bar's var0 (var3 + {VAR0_STEP}), var3 on the "
-                "last bar, never the same bar's var3 or var0",
+    KIT.verdict(f"{mode} series {series_id}: trigger_value is the next weekly row's var0 (var3 + {VAR0_STEP}), "
+                "var3 on the last weekly row, never the same weekly row's var3 or var0",
                 list(index) == list(expected_values.index) and np.array_equal(found, expected_values.to_numpy())
                 and not any(same_row.values()),
                 {"values": expected_values.to_numpy()[[0, 24, -2, -1]].tolist(), "same row": {"var3": False, "var0": False}},
@@ -450,7 +457,7 @@ def reference_verdicts(mode: str, levels: pd.Series, metrics: dict[str, float], 
                 len(levels) == len(SATURDAYS) - CURVE_FIRST_WEEK and np.allclose(levels.to_numpy(), ratios,
                                                                                   rtol=FLOAT32_RTOL, atol=0.0),
                 ratios[[0, -1]].tolist(), levels.to_numpy()[[0, -1]].tolist())
-    knots = bar_levels("0")
+    knots = weekly_row_levels("0")
     curve = knots.to_numpy()[CURVE_FIRST_WEEK:]
     expected = {"acr": variation_pct((curve[-1] / curve[0]) ** (1.0 / N_YEARS), 1.0),
                 "std": float(np.std(variation_pct(curve[1:], curve[:-1]), ddof=1)) * np.sqrt(ANNUAL_PERIODS),
@@ -488,9 +495,10 @@ def r6_verdicts(mode: str, signal: dict[str, pd.DataFrame], performance: dict[st
     KIT.verdict(f"R6 {mode}: the reference curve holds {R6_CURVE['dates']} Saturdays from {R6_CURVE['first']} to "
                 f"{R6_CURVE['last']}", found == R6_CURVE, R6_CURVE, found)
     metrics = reference_metrics(performance)
-    values = {key: metrics.get(key, np.nan) for key in R6_METRICS}
+    values = {key: metrics.get(key, np.nan) for key in REFERENCE_METRICS_R6}
     KIT.verdict(f"R6 {mode}: the reference acr, std, max_fall and fall_dur within {R6_ATOL}",
-                all(abs(values[key] - value) <= R6_ATOL for key, value in R6_METRICS.items()), R6_METRICS, values)
+                all(abs(values[key] - value) <= R6_ATOL for key, value in REFERENCE_METRICS_R6.items()),
+                REFERENCE_METRICS_R6, values)
 
 
 def reference_levels(performance: dict[str, pd.DataFrame]) -> pd.Series:
@@ -510,10 +518,10 @@ def reference_metrics(performance: dict[str, pd.DataFrame]) -> dict[str, float]:
 
 
 def daily_frame(series_id: str) -> pd.DataFrame:
-    """The daily rows of one series, Monday to Friday of every week: var3 on the line between the knots through the
-    series' affine map, the uncounted Monday flat at the Friday before it; var0 the previous row's var3 + VAR0_STEP on
+    """The daily rows of one series, S_k - 5 to S_k - 1 of every week k: var3 on the line between the knots through
+    the series' affine map, the uncounted row flat at the row before it; var0 the previous row's var3 + VAR0_STEP on
     the series' own rows; var1 and var2 BAND outside min and max of var0 and var3; var4 = var3; var5 VAR5_BASE + the row
-    index, 0 on the zero-var5 Friday and the uncounted Monday; var12 GATE_FAIL in the gate week, else GATE_PASS, var15
+    index, 0 on the zero-var5 row and the uncounted row; var12 GATE_FAIL in the gate week, else GATE_PASS, var15
     GATE_PASS; series 1 without its gap week."""
     week, step = np.divmod(np.arange(len(SATURDAYS) * ROWS_PER_WEEK), ROWS_PER_WEEK)
     path = KNOTS[week] + (step + 1) * WEEK_SLOPES[week] / ROWS_PER_WEEK
@@ -532,11 +540,11 @@ def daily_frame(series_id: str) -> pd.DataFrame:
                          "var15": np.full(rows.size, GATE_PASS)}, index=dates)
 
 
-def weekly_bars(frame: pd.DataFrame) -> pd.DataFrame:
-    """The bars of a daily frame by the upstream rules D1-D5 for the eight columns read: a row belongs to the bar of the
-    Saturday on or after it; a bar uses its counted rows (D3), or all its rows when none counts; var0 is the first used
-    row's, var1 the minimum, var2 the maximum, var3, var4, var12 and var15 the last used row's (the row giving var4;
-    the fixture holds no NaN), var5 the float64 sum cast to float32."""
+def weekly_rows(frame: pd.DataFrame) -> pd.DataFrame:
+    """The weekly rows of a daily frame for the eight columns read: a daily row belongs to the weekly row of the
+    Saturday on or after it; a weekly row uses its counted daily rows (counted_rows), or all its daily rows when none
+    counts; var0 is the first used daily row's, var1 the minimum, var2 the maximum, var3, var4, var12 and var15 the
+    last used daily row's (the row giving var4; the fixture holds no NaN), var5 the float64 sum cast to float32."""
     days = (frame.index - EPOCH).days.to_numpy()
     stamps = days + (EPOCH_SATURDAY - days) % 7
     counted = counted_rows(frame)
@@ -544,11 +552,11 @@ def weekly_bars(frame: pd.DataFrame) -> pd.DataFrame:
     rows = frame[used]
     groups = rows.groupby(stamps[used])
     sums = rows["var5"].astype("float64").groupby(stamps[used]).sum()
-    bars = pd.DataFrame({"var0": groups["var0"].first(), "var1": groups["var1"].min(), "var2": groups["var2"].max(),
-                         "var3": groups["var3"].last(), "var4": groups["var4"].last(), "var5": sums.astype("float32"),
-                         "var12": groups["var12"].last(), "var15": groups["var15"].last()})
-    bars.index = EPOCH + pd.to_timedelta(bars.index, unit="D")
-    return bars
+    weekly = pd.DataFrame({"var0": groups["var0"].first(), "var1": groups["var1"].min(), "var2": groups["var2"].max(),
+                           "var3": groups["var3"].last(), "var4": groups["var4"].last(), "var5": sums.astype("float32"),
+                           "var12": groups["var12"].last(), "var15": groups["var15"].last()})
+    weekly.index = EPOCH + pd.to_timedelta(weekly.index, unit="D")
+    return weekly
 
 
 def daily_max_fall(frame: pd.DataFrame, first: pd.Timestamp, last: pd.Timestamp) -> float:
@@ -561,7 +569,7 @@ def daily_max_fall(frame: pd.DataFrame, first: pd.Timestamp, last: pd.Timestamp)
 
 
 def last_counted_levels(frame: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.Series:
-    """var3 of the last counted row (D3) on or before each date, indexed by that row's date; a date before the first
+    """var3 of the last counted row on or before each date, indexed by that row's date; a date before the first
     counted row raises."""
     counted = frame.loc[counted_rows(frame), "var3"]
     rows = counted.index.searchsorted(dates, side="right") - 1
@@ -572,7 +580,7 @@ def last_counted_levels(frame: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.Seri
 
 
 def counted_rows(frame: pd.DataFrame) -> np.ndarray:
-    """D3: every row counts but one with var5 0 and var0 = var1 = var2 = var3."""
+    """Every row counts but one with var5 0 and var0 = var1 = var2 = var3."""
     flat = (frame["var0"] == frame["var1"]) & (frame["var1"] == frame["var2"]) & (frame["var2"] == frame["var3"])
     return ~((frame["var5"] == 0) & flat).to_numpy()
 
@@ -616,15 +624,15 @@ def expected_triggers(series_id: str, mode: str) -> list[tuple[int, int, bool, f
 
 
 def trigger_values(series_id: str) -> pd.Series:
-    """The following_row trigger values of one series' bars by Saturday: var3 + VAR0_STEP, the next bar's var0 (the
-    previous row's var3 + VAR0_STEP), and var3 on the last bar."""
-    levels = bar_levels(series_id)
+    """The following_row trigger values of one series' weekly rows by Saturday: var3 + VAR0_STEP, the next weekly
+    row's var0 (the previous daily row's var3 + VAR0_STEP), and var3 on the last weekly row."""
+    levels = weekly_row_levels(series_id)
     return pd.Series(np.r_[levels.to_numpy()[:-1] + VAR0_STEP, levels.iat[-1]], index=levels.index)
 
 
-def bar_levels(series_id: str) -> pd.Series:
-    """var3 of one series' bars by Saturday, the knots through its affine map: v_k for series 0, 2 v_k - 100 for
-    series 1, which lacks its gap week."""
+def weekly_row_levels(series_id: str) -> pd.Series:
+    """var3 of one series' weekly rows by Saturday, the knots through its affine map: v_k for series 0, 2 v_k - 100
+    for series 1, which lacks its gap week."""
     factor, offset = AFFINE[series_id]
     levels = pd.Series(factor * KNOTS[1:] + offset, index=SATURDAYS)
     return levels.drop(SATURDAYS[GAP_WEEK]) if series_id == GAP_SERIES else levels

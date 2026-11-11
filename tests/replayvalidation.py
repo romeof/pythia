@@ -153,7 +153,7 @@ def excursion_wave() -> np.ndarray:
 
 
 def frame_of(levels: np.ndarray) -> pd.DataFrame:
-    """var0 to var4 = levels (float32) and var5 = 1e6 on weekdays from 2020-01-01."""
+    """var0 to var4 = levels (float32) and var5 = 1e6 on observed dates from 2020-01-01."""
     frame = pd.DataFrame({column: levels.astype("float32") for column in ("var0", "var1", "var2", "var3", "var4")},
                          index=pd.bdate_range("2020-01-01", periods=len(levels)))
     frame["var5"] = np.full(len(levels), 1.0e6)

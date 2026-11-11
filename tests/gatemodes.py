@@ -1,12 +1,12 @@
-"""Regression for the gate on the previous bar in both replay modes (C2; the recording independence of HYP-03).
+"""Regression for the gate on the previous row in both replay modes (C2; the recording independence of HYP-03).
 
 analyze_series of the extrema strategy built from a scratch config copy of each concrete mode with the one gate item
 var12 >= 0.5, on a 200-row sine (var3 = var4 = 100 + 10 sin(2 pi t / 40), var0 = 0.5 x var3, var5 1e6) whose var12
-is 1.0 on every bar. Per mode: non-vacuity, two or more begins; with var12 set to 0 on the bar before the second
-begin r only, the run holds no begin on row r; with var12 set to 0 on bar r itself only, the begin on row r stays.
-Then var12 alternates in blocks of 15 bars (1.0, then 0.0): non-vacuity, a begin of the first run has a failing
-previous bar; every begin row's previous bar passes; and the decision columns (begins, ends, end_reason) are identical
-under the recording modes detection_row and following_row, with begins present. A gate on bar i itself fails the removal
+is 1.0 on every row. Per mode: non-vacuity, two or more begins; with var12 set to 0 on the row before the second
+begin r only, the run holds no begin on row r; with var12 set to 0 on row r itself only, the begin on row r stays.
+Then var12 alternates in blocks of 15 rows (1.0, then 0.0): non-vacuity, a begin of the first run has a failing
+previous row; every begin row's previous row passes; and the decision columns (begins, ends, end_reason) are identical
+under the recording modes detection_row and following_row, with begins present. A gate on row i itself fails the removal
 and the keeping verdicts; a gate that read a recorded value would make the recording modes differ.
 
 Structure:
@@ -31,7 +31,7 @@ ROWS, PERIOD = 200, 40
 LEVEL, AMPLITUDE = 100.0, 10.0
 START = "2020-01-01"
 THRESHOLD, PASSING, FAILING = 0.5, 1.0, 0.0
-BLOCK_BARS = 15
+BLOCK_ROWS = 15
 SHIPPED_RECORDING = "following_row"
 RECORDINGS = ("detection_row", "following_row")
 BEGINS = ("trigger_plus_begin", "trigger_minus_begin")
@@ -43,7 +43,7 @@ def main() -> None:
     with testkit.scratch(KIT) as folder:
         for mode in testkit.MODES:
             config_file = mode_config(folder, mode)
-            previous_bar(config_file, mode)
+            previous_row(config_file, mode)
             alternate_blocks(config_file, mode)
     KIT.finish()
 
@@ -60,34 +60,34 @@ def mode_config(folder: Path, mode: str) -> Path:
 # =============================================================================
 
 
-def previous_bar(config_file: Path, mode: str) -> None:
-    """A failing bar r-1 removes the begin on row r; a failing bar r keeps it."""
+def previous_row(config_file: Path, mode: str) -> None:
+    """A failing row r-1 removes the begin on row r; a failing row r keeps it."""
     begins = begin_rows(analyze(config_file, SHIPPED_RECORDING, series_frame(np.full(ROWS, PASSING))))
-    if not KIT.verdict(f"{mode}: non-vacuity, two or more begins with var12 passing on every bar", len(begins) >= 2,
+    if not KIT.verdict(f"{mode}: non-vacuity, two or more begins with var12 passing on every row", len(begins) >= 2,
                        ">= 2", begins):
         return
     row = begins[1]
     before = begin_rows(analyze(config_file, SHIPPED_RECORDING, series_frame(failing_on(row - 1))))
-    KIT.verdict(f"{mode}: var12 failing on bar {row - 1} only removes the begin on row {row}", row not in before,
+    KIT.verdict(f"{mode}: var12 failing on row {row - 1} only removes the begin on row {row}", row not in before,
                 f"no begin on row {row}", before)
     same = begin_rows(analyze(config_file, SHIPPED_RECORDING, series_frame(failing_on(row))))
-    KIT.verdict(f"{mode}: var12 failing on bar {row} only keeps the begin on row {row}", row in same,
+    KIT.verdict(f"{mode}: var12 failing on row {row} only keeps the begin on row {row}", row in same,
                 f"a begin on row {row}", same)
 
 
 def alternate_blocks(config_file: Path, mode: str) -> None:
-    """var12 failing on alternate blocks of bars: every begin's previous bar passes, and the decisions ignore the
+    """var12 failing on alternate blocks of rows: every begin's previous row passes, and the decisions ignore the
     recording mode."""
-    var12 = np.where((np.arange(ROWS) // BLOCK_BARS) % 2 == 0, PASSING, FAILING)
+    var12 = np.where((np.arange(ROWS) // BLOCK_ROWS) % 2 == 0, PASSING, FAILING)
     unblocked = begin_rows(analyze(config_file, SHIPPED_RECORDING, series_frame(np.full(ROWS, PASSING))))
     blockable = [row for row in unblocked if var12[row - 1] < THRESHOLD]
-    KIT.verdict(f"{mode}: alternate blocks, non-vacuity: a begin of the unblocked run has a failing previous bar",
+    KIT.verdict(f"{mode}: alternate blocks, non-vacuity: a begin of the unblocked run has a failing previous row",
                 bool(blockable), ">= 1", blockable)
     outputs = {recording: analyze(config_file, recording, series_frame(var12)) for recording in RECORDINGS}
     begins = begin_rows(outputs[SHIPPED_RECORDING])
     failing = [row for row in begins if row == 0 or var12[row - 1] < THRESHOLD]
-    KIT.verdict(f"{mode}: alternate blocks, every begin row's previous bar passes", bool(begins) and not failing,
-                {"begins": ">= 1", "failing previous bar": []}, {"begins": begins, "failing previous bar": failing})
+    KIT.verdict(f"{mode}: alternate blocks, every begin row's previous row passes", bool(begins) and not failing,
+                {"begins": ">= 1", "failing previous row": []}, {"begins": begins, "failing previous row": failing})
     counts = {recording: len(begin_rows(output)) for recording, output in outputs.items()}
     differing = decision_differences(outputs[RECORDINGS[0]], outputs[RECORDINGS[1]])
     KIT.verdict(f"{mode}: alternate blocks, decision columns identical under detection_row and following_row, with begins",
@@ -107,10 +107,10 @@ def series_frame(var12: np.ndarray) -> pd.DataFrame:
                          "var12": var12}, index=pd.date_range(START, periods=ROWS, freq="D"))
 
 
-def failing_on(bar: int) -> np.ndarray:
-    """var12 passing on every bar but the given one."""
+def failing_on(row: int) -> np.ndarray:
+    """var12 passing on every row but the given one."""
     var12 = np.full(ROWS, PASSING)
-    var12[bar] = FAILING
+    var12[row] = FAILING
     return var12
 
 

@@ -7,7 +7,7 @@ File A (C4): the three series hold identical values, var12 0.2 and var15 1.0, an
 2: in each mode no /triggers_1, while /triggers_0 and /triggers_2 are present and equal across the two runs, and
 /series_1 is absent with the pre-filter on only.
 File B (C6): the var12 item exempts series 0 and every series holds var12 1.0; series 0 and 1 hold var15 0.5 on every
-bar, series 2 on its first 100 bars and 1.0 after: in each mode the key sets of the two runs differ by /series_1
+row, series 2 on its first 100 rows and 1.0 after: in each mode the key sets of the two runs differ by /series_1
 alone, /triggers_2 holds a row and /series_0 is present in both, and every /triggers_* and /reference_series_* frame
 is equal across the runs (DataFrame.equals); the run with the pre-filter on holds one INFO record per mode naming the
 item var15 >= 0.73 that skips series 1, the other none.
@@ -62,7 +62,7 @@ def main() -> None:
 
 
 def exempt_scope() -> None:
-    """File A (C4): series 1 fails the var12 item on every bar and gets no trigger; the exempt series 2 and the exempt
+    """File A (C4): series 1 fails the var12 item on every row and gets no trigger; the exempt series 2 and the exempt
     reference series 0, with the same values, keep theirs, with the pre-filter on and off."""
     frames = {series_id: series_frame(np.full(ROWS, FAILING_VAR12), np.full(ROWS, PASSING)) for series_id in SERIES}
     with testkit.scratch(KIT) as folder:
@@ -82,7 +82,7 @@ def exempt_scope() -> None:
 
 
 def prefilter_scope() -> None:
-    """File B (C6): with the pre-filter on only the non-reference series that var15 passes on no bar is skipped; the
+    """File B (C6): with the pre-filter on only the non-reference series that var15 passes on no row is skipped; the
     trigger and reference frames are equal across the runs."""
     second_half = np.where(np.arange(ROWS) >= ROWS // 2, PASSING, FAILING_VAR15)
     var15 = {"0": np.full(ROWS, FAILING_VAR15), "1": np.full(ROWS, FAILING_VAR15), "2": second_half}

@@ -1,7 +1,7 @@
 """End-to-end oracle on a synthetic input with hand-derived values, both modes (D-3; F-01, F-02, R-S2, R-P2..P6).
 
 One dual --task all run on a scratch copy of the shipped configuration that reads a two-series
-input written by testkit.write_raw_input (36 weekdays from 2020-01-01, the read window those
+input written by testkit.write_raw_input (36 rows dated from 2020-01-01, the read window those
 dates), with lookback_window 10 and min_distance 2; the shipped trigger_value following_row, weight
 0.2, multiplicative_total_before_active_signals and yearly_attenuation_fraction 0.25 stay. var3 is piecewise
 linear: series 0 falls 1 per row from 115 (row 0) to its minimum 100 (row 15), rises 2 per row to

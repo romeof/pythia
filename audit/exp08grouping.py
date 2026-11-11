@@ -204,7 +204,7 @@ def _replaces(signal: ActiveSignal, sid: str, begin: pd.Timestamp, slope: float)
 
 
 def trim(series: dict, triggers: pd.DataFrame, period_back: int) -> dict:
-    """Every series cut to [earliest begin - period_back weekdays, latest end]; empty series dropped."""
+    """Every series cut to [earliest begin - BDay(period_back), latest end]; empty series dropped."""
     start = triggers[TRIGGER_BEGIN_DATES].min() - pd.offsets.BDay(period_back)
     end = triggers[TRIGGER_END_DATES].max()
     cut = {sid: points[(points.index >= start) & (points.index <= end)] for sid, points in series.items()}

@@ -4,7 +4,7 @@ TR-0 reads series 0 through the production reader and preprocessor (raw rows, th
 date filter, rows dropped, the reports, the saved reference rows). TR-1 replays the realistic loop of
 series 0 from var3 and the gate columns (scipy find_peaks on every rolling window, the newest unmarked
 and unsuppressed extremum per type, the four suppression checks, the gate among them on the previous
-bar, the minimum duration and the opposite-trigger end) up to its first swap
+row, the minimum duration and the opposite-trigger end) up to its first swap
 and records every input of that activation. TR-2 recomputes the ideal turning points of every
 series on the full series. TR-3 recomputes three persisted outcomes from /series_0. TR-4
 recomputes two realistic signal groups (eligibility, six-point windows, Pearson, slope
@@ -218,7 +218,7 @@ def replay_first_swap(frame: pd.DataFrame, config: AppConfig) -> dict:
     extremum of a type seen so far is its only candidate (Q7), taken when the window reports it and it is
     neither marked nor suppressed; the suppression checks run in their documented sequence; an opposite
     candidate within the minimum duration is suppressed for good, after it the active trigger ends and
-    the opposite begins on the same row. The gate reads the persisted frame's gate columns on the previous bar,
+    the opposite begins on the same row. The gate reads the persisted frame's gate columns on the previous row,
     for the items whose exempt_series does not name series 0.
     """
     replay = config.trigger.replay
@@ -278,8 +278,8 @@ def window_extrema(values: np.ndarray, start: int, end: int, strategy: StrategyC
 def suppression_checks(frame: pd.DataFrame, i: int, date: pd.Timestamp, kind: str, effective: pd.Timestamp,
                        latest: Optional[pd.Timestamp], active: Optional[dict], items: list[GateItem]) -> dict:
     """The four suppression checks in their documented sequence (True = suppressed; gate_blocked is the gate on the
-    previous bar: bar i-1 must pass value op threshold for every applicable item, in the column's dtype, a NaN failing
-    and a first bar blocked)."""
+    previous row: row i-1 must pass value op threshold for every applicable item, in the column's dtype, a NaN failing
+    and a first row blocked)."""
     passes = i > 0 and all(GATE_COMPARISONS[item.op](frame[item.column].iloc[i - 1], item.threshold) for item in items)
     return {"before_effective_start": bool(date < effective),
             "temporal_constraint": bool(latest is not None and date <= latest),
@@ -290,7 +290,7 @@ def suppression_checks(frame: pd.DataFrame, i: int, date: pd.Timestamp, kind: st
 def activation_record(frame: pd.DataFrame, i: int, date: pd.Timestamp, kind: str, checks: dict, found: dict,
                       effective: pd.Timestamp, items: list[GateItem]) -> dict:
     """Window bounds, find_peaks inputs, candidate lag, suppression inputs (each applicable item's value on the
-    previous bar) and recorded values of one activation."""
+    previous row) and recorded values of one activation."""
     dates = frame.index
     return {"kind": kind, "row": i, "date": day(dates[i]), "candidate": day(date),
             "lag_rows": int(i - dates.get_loc(date)), "window": [day(dates[found["bounds"][0]]), day(dates[found["bounds"][1]])],

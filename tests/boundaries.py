@@ -8,7 +8,7 @@
     series 2: the run returns 0, the store holds /series_0 only, and each short series logs its
     skip WARNING.
 (c) NaN rows: Preprocess.process_series drops exactly the rows holding a NaN.
-(d) An attenuation date at the index end: build_attenuation_schedule on the weekdays from 2020-01-02 to
+(d) An attenuation date at the index end: build_attenuation_schedule on the observed dates from 2020-01-02 to
     2021-06-01 with attenuation_month 6: the 2020 item is attenuated on 2021-06-01, the first index date of
     June that the index ends on, and the last item also on the index's last date.
 (e) The last row under following_row: select_trigger_value_vector takes each row's next var0 and

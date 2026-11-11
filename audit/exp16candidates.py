@@ -2,7 +2,7 @@
 
 A synthetic series (a plateau at 150, then a triangle wave of amplitude 1 around 100) hides
 every wave extremum while the plateau is in the rolling window (prominence 2 against 5 % of a
-range of 51) and shows them all on the row the plateau leaves it. (a) Q7: the bar before that row
+range of 51) and shows them all on the row the plateau leaves it. (a) Q7: the row before that one
 fails the gate item var5 >= 2, so the newest candidate of each type is suppressed there; under the decided
 reading only the newest candidate of a type seen so far may activate, so no older one does
 (the audited revision activated an older one on the next row). (b) Q6: with a minimum duration of eight rows,
@@ -47,7 +47,7 @@ REALISTIC = "realistic"
 PLATEAU_ROWS, PLATEAU_VALUE = 60, 150.0
 WAVE_LEVEL, WAVE_STEP, WAVE_PERIOD, WAVE_ROWS = 100.0, 0.25, 16, 160
 START = "2019-01-01"
-STARVED_VAR5, GATE_VAR5 = 1, 2.0  # var5 on the bar before the gate row, and the item var5 >= 2 that bar fails
+STARVED_VAR5, GATE_VAR5 = 1, 2.0  # var5 on the row before the gate row, and the item var5 >= 2 that row fails
 MIN_DURATION = 8
 
 
@@ -91,7 +91,7 @@ def series() -> pd.DataFrame:
 
 
 def q7(config: AppConfig, frame: pd.DataFrame, gate_row: int) -> dict:
-    """The newest candidates suppressed on the gate row, whose previous bar is starved; every activation against the
+    """The newest candidates suppressed on the gate row, whose previous row is starved; every activation against the
     newest candidate seen."""
     events = recorded_events(config, frame)
     suppressed = [event for event in events if event["kind"] == "suppressed" and event["row"] == gate_row]

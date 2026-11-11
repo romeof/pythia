@@ -1,5 +1,5 @@
-# Weekly workflow: workflows/extrema.yaml on weekly bars stamped on Saturdays (W-SAT); every horizon counts bars (weeks),
-# so the horizons are the daily ones divided by five (the daily input holds five rows a week) and at least one bar, the sample sizes unchanged
+# Weekly workflow: workflows/extrema.yaml on weekly rows stamped on Saturdays (W-SAT); every horizon counts rows (weeks),
+# so the horizons are the daily ones divided by five (about the input's ratio of daily to weekly rows) and at least one row, the sample sizes unchanged
 read:
   raw_data: "../data/2026_09_25_1/0/raw/0.h5"
   output_root: "./data"
@@ -9,11 +9,11 @@ read:
   skip_series: []
 
 trigger:
-  gate:                 # a begin at bar i needs bar i-1 to pass every item that applies to the series; a NaN fails
+  gate:                 # a begin at row i needs row i-1 to pass every item that applies to the series; a NaN fails
     items:
       - {column: var12, op: ">=", threshold: 0.83, exempt_series: ["0"]}   # every series but the reference series 0
       - {column: var15, op: ">=", threshold: 0.73}                         # every series
-    prefilter: true     # skip a series one applicable item passes on no bar of the read window (never a reference series)
+    prefilter: true     # skip a series one applicable item passes on no row of the read window (never a reference series)
   min_length: 5
   consecutive_rows_with_bad_preprocessed_data: 3
   trigger_value: "following_row" #"detection_row"
@@ -29,9 +29,9 @@ trigger:
     width: 1
   replay:
     mode: "dual" #"ideal" #"realistic"
-    lookback_window: 10 # Burn-in period: wait this many bars (weeks) before starting analysis
+    lookback_window: 10 # Burn-in period: wait this many rows (weeks) before starting analysis
     window_type: "rolling" # "expanding" = use full history, "rolling" = use fixed window of lookback_window length
-    min_duration_periods: 1 # Minimum duration in bars (weeks): no end allowed before this
+    min_duration_periods: 1 # Minimum duration in rows (weeks): no end allowed before this
 
     # === End Configuration ===
     # Each end mode is a single self-documenting parameter:
@@ -41,7 +41,7 @@ trigger:
     # No mode list: active modes are derived from non-null values.
     # Checking sequence is fixed in code: against_threshold > along_threshold > opposite_trigger > different_end > max_duration
     end:
-      max_duration_periods: 100 # Time-based safety limit in bars (weeks, about two years). null = disabled
+      max_duration_periods: 100 # Time-based safety limit in rows (weeks, about two years). null = disabled
       against_threshold_pct: null # Move against the trigger direction (e.g. 0.05 = 5%). null = disabled
       along_threshold_pct: null # Move along the trigger direction (e.g. 0.10 = 10%). null = disabled
       opposite_trigger_as_begin_strategy: true # End on opposite trigger. false = disabled

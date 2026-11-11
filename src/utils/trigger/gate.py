@@ -1,5 +1,5 @@
 """
-The gate on the previous bar (trigger.gate): the applicable items, the pre-filter's predicate, the begin vector
+The gate on the previous row (trigger.gate): the applicable items, the pre-filter's predicate, the begin vector
 both replay modes read with its columns and their check, and the one-item test.
 
 Structure:
@@ -47,7 +47,7 @@ def blocking_item(df: pd.DataFrame, items: Sequence[GateItem]) -> Optional[GateI
 
 
 def begin_allowed(series_id: str, df: pd.DataFrame, items: Sequence[GateItem]) -> np.ndarray:
-    """allowed[i]: bar i-1 passes every item; allowed[0] is False (no previous bar). Checks the items' columns first."""
+    """allowed[i]: row i-1 passes every item; allowed[0] is False (no previous row). Checks the items' columns first."""
     check_gate_columns(series_id, df, gate_columns(items))
     passes = np.ones(len(df), dtype=bool)
     for item in items:

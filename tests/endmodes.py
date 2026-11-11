@@ -15,7 +15,7 @@ trigger of the minimum on row 40 activates on row 41, begin value 101:
 - the minimum duration: along_threshold 0.05 with min_duration_periods 10 -> no end before row 51, so it ends
   on row 51, though the change along the direction holds from row 47.
 The suppression sequence: one series (a minimum on row 8, a 150 plateau to row 40, then a wave of
-period 8 around 100 with amplitude 0.5, var5 at 1 on row 75, so row 76's previous bar fails the
+period 8 around 100 with amplitude 0.5, var5 at 1 on row 75, so row 76's previous row fails the
 gate item), no end mode, every suppression recorded through a wrapper on
 _check_suppression_conditions: the first of each reason, in sequence, is before_effective_start
 (row 19, candidate row 8), temporal_constraint (row 61, candidate 55: the plateau leaves the window
@@ -141,7 +141,7 @@ def suppression_sequence() -> None:
 
 
 def frame_of(levels: np.ndarray) -> pd.DataFrame:
-    """var3 = var4 = var0 the levels, var1 and var2 1 % below and above, var5 1e6, on weekdays from 2020-01-01."""
+    """var3 = var4 = var0 the levels, var1 and var2 1 % below and above, var5 1e6, on observed dates from 2020-01-01."""
     values = np.asarray(levels, dtype="float32")
     return pd.DataFrame({"var0": values, "var1": values * np.float32(0.99), "var2": values * np.float32(1.01), "var3": values,
                          "var4": values, "var5": np.full(len(values), 1.0e6)},

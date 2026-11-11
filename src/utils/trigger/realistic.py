@@ -69,7 +69,7 @@ class RealisticModeMixin:
 
     Processes incrementally with no future rows:
     - Rolling/expanding window trigger detection
-    - The gate on the previous bar at the activation row
+    - The gate on the previous row at the activation row
     - Consecutive same-type trigger handling
     - Threshold monitoring against and along the trigger direction
     - Inline trigger_end generation
@@ -409,7 +409,7 @@ class RealisticModeMixin:
     ) -> Optional[str]:
         """Check if a candidate should be suppressed. Returns reason or None.
 
-        The gate reads the begin vector of the series (BaseDetection.analyze_series) at the activation row i: bar i-1
+        The gate reads the begin vector of the series (BaseDetection.analyze_series) at the activation row i: row i-1
         must pass every item that applies to the series, whatever trigger_value records.
         """
         if effective_start_date is not None and candidate_date < effective_start_date:
