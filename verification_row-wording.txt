@@ -112,3 +112,60 @@ No controversial decision arose; nothing was escalated.
 
 == PROJECT CHECKS (run by planloop after the verdict, from C:\Users\ziosa\Desktop\work\cld; timeout 600 s each) ==
 PASS  "C:\Users\ziosa\AppData\Local\Programs\Python\Python311\python.exe" pythia/rules/lint_terminology.py "C:\Users\ziosa\Desktop\work\cld\pythia\pythia-row-wording/src"  (0.7 s)
+
+
+CLOSING PASS (implementer, round r01_I-implement, launch 20261111-162229)
+-------------------------------------------------------------------------
+Review r01_R-codereview (launch 20261111-161036): MERGE; 0 blockers, 0 should-fix, 0 notes. This pass started at
+0f43037 and committed the two test edits as 0260f8f; this section lands in the commit after it. Square brackets mark
+a paraphrase of quoted text that this record must not carry.
+
+Section A - none. The review's structured findings list is empty, so no finding_id exists and nothing in section A
+is pending.
+
+Section C, by the review's numbering and text:
+1. [fix-now] "tests/gatevector.py:10 and :109 - 'though never on one row' / '(none on one row)' read as
+   self-contradictory now that both nouns are 'row'; write 'never all on the same row' / '(never both on the same
+   row)'." - IMPLEMENTED. Docstring line 10 now reads "though never all on the same row"; the verdict label on
+   line 109 now reads "blocking_item: items passing on different rows only (never both on the same row) return None".
+2. [fix-now] "tests/weeklyrows.py:56 - 'each begin one week later' should read 'one weekly row later', the faithful
+   S1 replacement of [the base text's retired-word phrase] and the actual mechanism (next row of the series' own
+   index)." - IMPLEMENTED. Docstring line 56 now reads "realistic, each begin one weekly row later". No listed begin
+   crosses series 1's gap (week 44 to 46), so the line's figures stand unchanged.
+3. [no-change] "audit/exp08grouping.py:207 names BDay(period_back) instead of neutral calendar terms." - DECLINED,
+   for the reviewer's reason, whose premise I checked: the docstring mirrors the call on line 208, which S2 keeps,
+   and a neutral paraphrase would describe the offset less exactly.
+4. [no-change] "A2's literal greps at HEAD also list the committed record (verification_row-wording.txt:45,87:
+   [two quoted A2 phrases])." - DECLINED, for the reviewer's reason: A2 was measured on 18a217d before the record
+   landed, the record is removed after the merge, and excluding it in A2 is a brief-template change outside this
+   branch. This section adds no line that A2's greps match.
+5. [no-change] "REFERENCE_METRICS_R6 departs from the R6_* prefix of R6_SIGNALS, R6_CURVE and R6_ATOL
+   (tests/weeklyrows.py:128-131)." - DECLINED, for the reviewer's reason: [an R6-prefixed name after the word
+   "in"] re-creates the sweep hit S6 clears, and renaming the whole group lies outside S6.
+
+Checks of this pass (python = the master venv interpreter, PYTHONUTF8=1, -B):
+- git diff 0f43037..0260f8f: tests/gatevector.py 2+/2-, tests/weeklyrows.py 1+/1-; line counts 155 and 647 kept;
+  git diff --check clean; both files i/lf.
+- AST without docstrings: tests/weeklyrows.py equals 0f43037's; tests/gatevector.py equals 0f43037's with the one
+  label mapped. Against fa2cc18 the same two str constants of tests/gatevector.py differ as at 0f43037, each keeping
+  every number, so A5's 26 reworded constants stay 26. Both files compile.
+- A1's three greps (record excluded) print 0, 0 and 0 lines; A2's four greps print 0 lines in the two files.
+- lint_terminology.py --strict src tests audit workflows: rc 1 as before, 65 hits across 168 files, the three
+  standing terms at 36, 20 and 9; 0 hits in the two edited files.
+- tests/gatevector.py: rc 0, "SUMMARY 14 PASS, 0 FAIL", 2 s. tests/weeklyrows.py: rc 0, "SUMMARY 57 PASS, 0 FAIL",
+  18 s.
+- Project check (lint_terminology.py on <worktree>/src, the Python 3.11 interpreter): rc 0, no hits.
+- residual.py <worktree> 0260f8f: rc 0, no REAL hit. Before it landed, this section passed residual.classify with no
+  REAL hit, and the A1 regex printed 0 on it.
+- Consumers: no tracked file cites a line of either file. The pythia-dev plan 20261111_Opus-5-5_trigger-review cites
+  tests/gatevector.py:109 with an elided quote of the label; the quote still matches the new text on the same line.
+
+Not done, or changed by design:
+- tests/runall.py was not re-run in this pass; the re-test phase runs the suite. The two edited scripts ran alone.
+- One console verdict line of tests/gatevector.py reads differently by design (item 1's label); the script's verdict
+  count stays 14, and only a per-verdict text comparison shows the new label.
+- The audit scripts were not executed; stage 2, the merge and the record's removal remain with the assistant and
+  the operator.
+- The weeklyrows run left numba caches under src/utils/performance; they were removed, and git status --ignored is
+  empty again.
+No decision was escalated.
