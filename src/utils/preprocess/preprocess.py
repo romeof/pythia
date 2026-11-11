@@ -3,7 +3,7 @@ Preprocessing utilities for time series data cleaning.
 
 This module provides the Preprocess class that cleans time series data:
 it removes every row with a NaN in a value column (var0-var5) and the rows that fail the trigger.validity rules.
-The check reads the value columns only, so a gate column (NaN where a bar holds no value) never removes a row.
+The check reads the value columns only, so a gate column (NaN where a row holds no value) never removes a row.
 
 Structure:
 1. Preprocess class with public starting point process_series

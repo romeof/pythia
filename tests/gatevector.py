@@ -1,16 +1,16 @@
-"""Regression for the gate on the previous bar, in-process: the begin vector, the applicable items, the pre-filter's
+"""Regression for the gate on the previous row, in-process: the begin vector, the applicable items, the pre-filter's
 predicate, the missing-column error and the gate item's schema (C1, C5).
 
 begin_allowed on a 6-row frame (var12 NaN, 0.9, 0.5, 0.83, 0.2, 1.0 and var15 0.8 with a NaN on row 1, both float32),
-with the item var12 >= 0.83 alone and with var15 >= 0.73 beside it, equals a row-by-row oracle (bar i allowed when
-i > 0 and bar i-1 passes every item, each comparison in the column's dtype) and the listed vector: row 0 is blocked
-(no previous bar), a NaN fails (row 1 after var12's, row 2 after var15's), and the float32 0.83 of row 3 passes
->= 0.83, so row 4 is allowed. An item var14 <= 5 on a rank column holding 0 on unranked bars passes there.
+with the item var12 >= 0.83 alone and with var15 >= 0.73 beside it, equals a row-by-row oracle (row i allowed when
+i > 0 and row i-1 passes every item, each comparison in the column's dtype) and the listed vector: row 0 is blocked
+(no previous row), a NaN fails (row 1 after var12's, row 2 after var15's), and the float32 0.83 of row 3 passes
+>= 0.83, so row 4 is allowed. An item var14 <= 5 on a rank column holding 0 on unranked rows passes there.
 applicable_items drops the items whose exempt_series names the series; blocking_item returns the first item that
-passes on no row, and None when each item passes on some row, though never on one bar; begin_allowed on a frame
+passes on no row, and None when each item passes on some row, though never all on the same row; begin_allowed on a frame
 without var12 and var15 raises ValueError with the exact message. GateItem refuses the op ">", the column value12, a
-NaN or infinite threshold and the exempt id 1x2, and accepts var12 exempting "0". A gate on bar i itself, a shift that
-wraps the last bar onto row 0, or a comparison in float64 (0.83 as float32 is 0.82999998) fails a verdict.
+NaN or infinite threshold and the exempt id 1x2, and accepts var12 exempting "0". A gate on row i itself, a shift that
+wraps the last row onto row 0, or a comparison in float64 (0.83 as float32 is 0.82999998) fails a verdict.
 
 Structure:
 1. main
@@ -42,7 +42,7 @@ RANK_ITEM = {"column": "var14", "op": "<=", "threshold": 5.0}
 VECTORS = {
     "var12 >= 0.83": ([VAR12_ITEM], [False, False, True, False, True, False]),
     "var12 >= 0.83 and var15 >= 0.73": ([VAR12_ITEM, VAR15_ITEM], [False, False, False, False, True, False]),
-    "var14 <= 5 on a rank column, 0 on unranked bars": ([RANK_ITEM], [False, True, True, True, False, True]),
+    "var14 <= 5 on a rank column, 0 on unranked rows": ([RANK_ITEM], [False, True, True, True, False, True]),
 }
 # blocking_item: an item no row passes, and two items that pass on different rows only (var12 on row 5, var14 on row 3)
 NOWHERE_ITEM = {"column": "var12", "op": ">=", "threshold": 2.0}
@@ -106,7 +106,7 @@ def prefilter_predicate(frame: pd.DataFrame) -> None:
     rows = {item.column: np.flatnonzero([compared(value, item) for value in frame[item.column].to_numpy()]).tolist()
             for item in separate}
     found = blocking_item(frame, separate)
-    KIT.verdict("blocking_item: items passing on different rows only (none on one bar) return None",
+    KIT.verdict("blocking_item: items passing on different rows only (never both on the same row) return None",
                 found is None and rows == {"var12": [5], "var14": [3]}, {"returned": None, "rows": {"var12": [5], "var14": [3]}},
                 {"returned": found, "rows": rows})
 
@@ -139,7 +139,7 @@ def gate_frame() -> pd.DataFrame:
 
 
 def oracle(frame: pd.DataFrame, items: list) -> list[bool]:
-    """Bar i allowed when i > 0 and bar i-1 passes every item, row by row."""
+    """Row i allowed when i > 0 and row i-1 passes every item, row by row."""
     return [row > 0 and all(compared(frame[item.column].iat[row - 1], item) for item in items) for row in range(len(frame))]
 
 

@@ -1,7 +1,7 @@
 """Regression for a run whose triggers form no signal (HYP-27, R-P9, performance.md:79).
 
 Case (a): --task all on a one-series realistic copy whose one gate item, var5 >= 1e18, fails on
-every bar, so the gate blocks every begin: no /triggers_* key (non-vacuity), the "No signals found in
+every row, so the gate blocks every begin: no /triggers_* key (non-vacuity), the "No signals found in
 signal HDF5" warning, no ERROR line, return code 0 and a performance store holding /strategy_name (the
 documented empty outputs). Case (b), after (a)'s verdicts: a zero-byte file replaces the signal
 output and --task performance runs on the same copy: no performance store and a non-zero return code (a

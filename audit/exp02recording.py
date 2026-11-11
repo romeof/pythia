@@ -2,10 +2,10 @@
 
 Six series from the raw input (Read + Preprocess) go through analyze_series in ideal and
 realistic mode under detection_row and following_row, with the shipped gate items and with one binding
-item, var4 >= the lower middle value of var4 on the bar before each candidate row (the rows where each
+item, var4 >= the lower middle value of var4 on the row before each candidate row (the rows where each
 mode evaluates the gate), which blocks the candidate rows below it. Expected by
 atp_trigger-value-usage.md:12: begin, end and end_reason columns identical across the two
-recording modes, because the gate reads bar i-1's gate columns whatever the recording mode (Q3).
+recording modes, because the gate reads row i-1's gate columns whatever the recording mode (Q3).
 Planted-defect control: one flipped begin in one mode's copy is flagged.
 
 Structure:

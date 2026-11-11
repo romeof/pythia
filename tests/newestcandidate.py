@@ -2,7 +2,7 @@
 
 EXP-16's series, built inline: 60 rows at 150, then a triangle wave around 100 (step 0.25, period
 16 rows), so every wave extremum stays hidden while the plateau is in the rolling window and all
-appear on row 109, the first window without it; var5 on row 108 is 1, so row 109's previous bar
+appear on row 109, the first window without it; var5 on row 108 is 1, so row 109's previous row
 fails the gate item var5 >= 2 and its newest candidates are suppressed there. The scratch
 config copy pins the shipped values these rows assume (rolling window of 50 rows, find_peaks
 parameters) and the gate item, so an edit of workflows/extrema.yaml cannot hide the unfixed
@@ -35,7 +35,7 @@ from src.utils.trigger.realistic import RealisticModeMixin
 PLATEAU_ROWS, PLATEAU_LEVEL = 60, 150.0
 WAVE_LEVEL, WAVE_STEP, PERIOD, WAVE_ROWS = 100.0, 0.25, 16, 160
 STARVED_ROW, STARVED_VAR5 = 108, 1
-BLOCKED_ROW = STARVED_ROW + 1  # the row whose previous bar fails the gate item
+BLOCKED_ROW = STARVED_ROW + 1  # the row whose previous row fails the gate item
 START = "2019-01-01"
 BEGINS = ("trigger_plus_begin", "trigger_minus_begin")
 PINNED = {"trigger.replay.mode": "realistic", "trigger.replay.window_type": "rolling",

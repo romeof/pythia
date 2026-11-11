@@ -6,7 +6,7 @@ Case 1: an absent input inside data\\exp\\06 (the <date>/<dataset>/raw/<file> de
 Case 2: the real input with performance.gradient.max_references 0 in the dev copy: the
         Performance task raises in its config check.
 Case 3: the real input with series 0 only and one gate item, var4 >= twice series 0's highest
-        var4, which fails on every bar: no trigger, no signal.
+        var4, which fails on every row: no trigger, no signal.
 For the failing builds a child calls luigi.build in-process and logs its return values.
 
 Structure:
@@ -131,7 +131,7 @@ def case_max_references(folder: Path) -> dict:
 
 
 def case_zero_triggers(folder: Path) -> dict:
-    """A var4 item no bar of series 0 passes: no trigger, no /signals, Performance's KeyError."""
+    """A var4 item no row of series 0 passes: no trigger, no /signals, Performance's KeyError."""
     probe_file = pipelinekit.write_config_copy(CTX, folder / "probe", strategy={"read.skip_series": ["1", "2", "3", "4", "5"]})
     config = pipelinekit.load_copy(probe_file)
     frame = pipelinekit.raw_series(config)[KEPT_SERIES]

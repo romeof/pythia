@@ -1,4 +1,4 @@
-"""EXP-04: no future rows in realistic mode (R-T7), length guards (R-T4), the gate's previous-bar dependence (HYP-03).
+"""EXP-04: no future rows in realistic mode (R-T7), length guards (R-T4), the gate's previous-row dependence (HYP-03).
 
 Inputs come from the raw input (Read + Preprocess), never from persisted tables. Each prefix
 df.iloc[:i+1] (a fresh copy) goes through analyze_series in realistic mode, which recomputes

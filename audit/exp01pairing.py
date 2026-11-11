@@ -6,7 +6,7 @@
    coded; A: trailing excess removed by count, the audited revision's reading, checked as no longer observed).
 2. A plateau maximum, without a gate: find_peaks reports it; R-T13 expects a minus begin there.
 3. The persisted ideal series of a run copy re-paired with reading B (the extrema masked by the
-   gate on the previous bar of the copy's items, rising-edge dedup, each begin with the first
+   gate on the previous row of the copy's items, rising-edge dedup, each begin with the first
    strictly later unmatched end, first-wins overlap removal); every difference reported with
    its mechanism; end_reason rows counted against end rows (HYP-02).
 4. Real-data ties: on every in-range series and every realistic window, the turning points
@@ -220,7 +220,7 @@ def _without_begin(frame: pd.DataFrame, pair: tuple) -> pd.DataFrame:
 
 
 def derived_flags(series_id: str, df: pd.DataFrame, strategy, items: Sequence[GateItem]) -> tuple[dict, dict]:
-    """Begin and end flags re-derived with the strategy's own extrema and the gate on the previous bar (the items
+    """Begin and end flags re-derived with the strategy's own extrema and the gate on the previous row (the items
     that apply to the series, read on the persisted frame's gate columns)."""
     values = df[VAR3].to_numpy(dtype=float)
     minima, maxima = root_extrema(strategy, values)

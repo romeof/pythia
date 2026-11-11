@@ -1,7 +1,7 @@
 """
 Scalar formula helpers for gradient-level metric calculations.
 
-All metrics operate on periodic (per-bar) variations derived from the
+All metrics operate on periodic (per-row) variations derived from the
 cumulative percentage series. Annualization uses an empirical factor
 m = (N-1) / T_years where N-1 is the count of variation intervals (N data points).
 

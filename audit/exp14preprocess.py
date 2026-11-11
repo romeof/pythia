@@ -2,7 +2,7 @@
 
 Synthetic series for the NaN check and each shipped rule of trigger.validity (nonnegative,
 nonzero, not_all_equal) through production Preprocess.process_series, and a three-row bad block on consecutive
-weekdays with dates missing inside it: documents "consecutive rows" (trigger.md:91) against
+rows with dates missing inside it: documents "consecutive rows" (trigger.md:91) against
 the row rule of _find_consecutive_blocks (preprocess.py:170-196; F-20).
 
 Structure:
@@ -41,7 +41,7 @@ CONSECUTIVE = "Consecutive Issues"
 
 
 def main() -> None:
-    """Each drop rule removes its row; a weekday block across missing dates against a calendar-day block."""
+    """Each drop rule removes its row; a block of rows across missing dates against a calendar-day block."""
     _parse_args()
     folder = CTX.label_dir(EXPERIMENT)
     config = pipelinekit.load_copy(pipelinekit.write_config_copy(CTX, folder / "config"))
@@ -58,7 +58,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def base_frame() -> pd.DataFrame:
-    """A clean weekday frame."""
+    """A clean frame of SIZE rows from START."""
     return synthetic.daily_frame(100.0 + np.arange(SIZE, dtype=float), START)
 
 
@@ -80,7 +80,7 @@ def check_rules(config: AppConfig, folder: Path) -> dict:
 
 
 def check_blocks(config: AppConfig, folder: Path) -> dict:
-    """Three bad weekdays across missing dates versus three calendar-consecutive bad days."""
+    """Three bad rows across missing dates versus three calendar-consecutive bad days."""
     found = {}
     for name, dates in (("gap", GAP_BLOCK), ("calendar", CALENDAR_BLOCK)):
         frame = synthetic.daily_frame(100.0 + np.arange(30, dtype=float), START)
@@ -94,7 +94,7 @@ def check_blocks(config: AppConfig, folder: Path) -> dict:
         found[name] = {"dates": list(dates), "reported": CONSECUTIVE in report}
     threshold = config.trigger.consecutive_rows_with_bad_preprocessed_data
     CTX.verdict("calendar-consecutive block of three is reported", found["calendar"]["reported"], True, found["calendar"])
-    CTX.verdict(f"weekday block of three across missing dates is reported (consecutive rows, threshold {threshold})",
+    CTX.verdict(f"three-row block across missing dates is reported (consecutive rows, threshold {threshold})",
                 found["gap"]["reported"], True, found["gap"])
     return found
 

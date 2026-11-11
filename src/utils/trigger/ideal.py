@@ -58,7 +58,7 @@ class IdealModeMixin:
     def _analyze_series_ideal(self, series_id: str, df: pd.DataFrame) -> pd.DataFrame:
         """Ideal mode analysis starting point (future rows visible)."""
         df = self._generate_trigger_begin(df)
-        # The gate on the previous bar: a begin on an extremum row whose previous bar fails it is removed (a row
+        # The gate on the previous row: a begin on an extremum row whose previous row fails it is removed (a row
         # without a begin already holds 0), so the ends copied from the opposite begins below lose it too
         df.loc[~self._begin_allowed, BEGIN_COLS] = 0
         latest_plus_idx = self._get_latest_trigger_begin_idx(df, TRIGGER_PLUS_BEGIN)

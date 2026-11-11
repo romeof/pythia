@@ -1,6 +1,6 @@
 """Regression for the same-day sweep of the weight constraint (Q4).
 
-Production sweep_line_filter on the weekdays d0..d11. (1) A signal beginning on the day another
+Production sweep_line_filter on the observed dates d0..d11. (1) A signal beginning on the day another
 ends: bounds {1: (d0, d4), 2: (d4, d8), 3: (d4, d7)}, weight 0.5, maximum 1.0; end events come
 before begin events on the same date, so signal 1 has left when 2 and 3 begin on d4 and nothing is
 removed. (2) A zero-length signal: {1: (d2, d2), 2: (d5, d8)}, weight 1.0, maximum 1.0; its end

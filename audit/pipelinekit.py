@@ -315,6 +315,6 @@ def binding_gate(series: dict[str, pd.DataFrame], rows: dict[str, list[int]]) ->
 
 
 def gate_input(df: pd.DataFrame, row: int) -> float:
-    """var4 on the bar before a candidate row, what the audit's binding var4 items compare (a candidate row is never
+    """var4 on the row before a candidate row, what the audit's binding var4 items compare (a candidate row is never
     row 0: find_peaks marks no end sample, and the realistic loop starts at lookback_window - 1)."""
     return float(df[VAR4].iat[row - 1])
